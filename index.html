@@ -20,6 +20,7 @@
             overflow-x: hidden;
         }
 
+        /* 皮克斯风格云朵 - 移到两侧避免遮挡内容 */
         body::before {
             content: '';
             position: fixed;
@@ -30,7 +31,9 @@
             background: white;
             border-radius: 50px;
             opacity: 0.7;
-            box-shadow: 35px -15px 0 -8px white, 70px 8px 0 -18px white;
+            box-shadow: 
+                35px -15px 0 -8px white,
+                70px 8px 0 -18px white;
             animation: float 20s infinite ease-in-out;
             z-index: -1;
         }
@@ -45,11 +48,14 @@
             background: white;
             border-radius: 40px;
             opacity: 0.6;
-            box-shadow: 30px -12px 0 -6px white, 55px 6px 0 -14px white;
+            box-shadow: 
+                30px -12px 0 -6px white,
+                55px 6px 0 -14px white;
             animation: float 25s infinite ease-in-out reverse;
             z-index: -1;
         }
 
+        /* 额外的小云朵 */
         .cloud-extra {
             position: fixed;
             top: 60%;
@@ -59,11 +65,41 @@
             background: white;
             border-radius: 30px;
             opacity: 0.5;
-            box-shadow: 20px -8px 0 -5px white, 40px 5px 0 -10px white;
+            box-shadow: 
+                20px -8px 0 -5px white,
+                40px 5px 0 -10px white;
             animation: float 30s infinite ease-in-out;
             z-index: -1;
         }
 
+        /* 真实照片头像 */
+        .real-boy, .real-girl {
+            position: fixed;
+            bottom: 100px;
+            width: 80px;
+            height: 80px;
+            z-index: 0;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .real-boy {
+            left: 6%;
+        }
+
+        .real-girl {
+            right: 6%;
+        }
+
+        .real-boy img, .real-girl img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 卡通小男孩 - 重新设计 */
         .cartoon-boy {
             position: fixed;
             bottom: 80px;
@@ -73,6 +109,7 @@
             z-index: 0;
         }
 
+        /* 男孩头部 */
         .cartoon-boy .head {
             position: absolute;
             top: 0;
@@ -84,6 +121,7 @@
             border-radius: 50%;
         }
 
+        /* 男孩头发 - 顶部短发 */
         .cartoon-boy .head::before {
             content: '';
             position: absolute;
@@ -96,6 +134,7 @@
             border-radius: 18px 18px 5px 5px;
         }
 
+        /* 男孩眼睛 */
         .cartoon-boy .eyes {
             position: absolute;
             top: 14px;
@@ -116,6 +155,7 @@
             border-radius: 50%;
         }
 
+        /* 男孩眉毛 */
         .cartoon-boy .eyebrows {
             position: absolute;
             top: 10px;
@@ -136,6 +176,7 @@
             border-radius: 2px;
         }
 
+        /* 男孩鼻子 */
         .cartoon-boy .nose {
             position: absolute;
             top: 20px;
@@ -147,6 +188,7 @@
             border-radius: 50%;
         }
 
+        /* 男孩嘴巴 - 微笑 */
         .cartoon-boy .mouth {
             position: absolute;
             top: 26px;
@@ -158,6 +200,7 @@
             border-radius: 0 0 12px 12px;
         }
 
+        /* 男孩腮红 */
         .cartoon-boy .cheeks {
             position: absolute;
             top: 22px;
@@ -178,6 +221,7 @@
             border-radius: 50%;
         }
 
+        /* 男孩身体 - T恤 */
         .cartoon-boy .body {
             position: absolute;
             top: 38px;
@@ -189,6 +233,7 @@
             border-radius: 10px 10px 5px 5px;
         }
 
+        /* 男孩手臂 */
         .cartoon-boy .arms {
             position: absolute;
             top: 42px;
@@ -208,6 +253,7 @@
             border-radius: 4px;
         }
 
+        /* 男孩腿 */
         .cartoon-boy .legs {
             position: absolute;
             top: 70px;
@@ -227,6 +273,7 @@
             border-radius: 0 0 4px 4px;
         }
 
+        /* 卡通小女孩 - 重新设计 */
         .cartoon-girl {
             position: fixed;
             bottom: 80px;
@@ -236,6 +283,7 @@
             z-index: 0;
         }
 
+        /* 女孩头部 */
         .cartoon-girl .head {
             position: absolute;
             top: 0;
@@ -247,6 +295,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩头发 - 顶部刘海 */
         .cartoon-girl .head::before {
             content: '';
             position: absolute;
@@ -259,6 +308,7 @@
             border-radius: 16px 16px 5px 5px;
         }
 
+        /* 女孩双马尾 - 左侧 */
         .cartoon-girl .pigtail-left {
             position: absolute;
             top: -8px;
@@ -271,6 +321,7 @@
             transform-origin: top center;
         }
 
+        /* 女孩双马尾 - 右侧 */
         .cartoon-girl .pigtail-right {
             position: absolute;
             top: -8px;
@@ -283,6 +334,7 @@
             transform-origin: top center;
         }
 
+        /* 马尾末端装饰 - 左 */
         .cartoon-girl .pigtail-left::after {
             content: '';
             position: absolute;
@@ -295,6 +347,7 @@
             border-radius: 50%;
         }
 
+        /* 马尾末端装饰 - 右 */
         .cartoon-girl .pigtail-right::after {
             content: '';
             position: absolute;
@@ -307,6 +360,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩眼睛 */
         .cartoon-girl .eyes {
             position: absolute;
             top: 13px;
@@ -327,6 +381,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩眉毛 */
         .cartoon-girl .eyebrows {
             position: absolute;
             top: 9px;
@@ -347,6 +402,7 @@
             border-radius: 2px;
         }
 
+        /* 女孩鼻子 */
         .cartoon-girl .nose {
             position: absolute;
             top: 19px;
@@ -358,6 +414,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩嘴巴 - 微笑 */
         .cartoon-girl .mouth {
             position: absolute;
             top: 24px;
@@ -369,6 +426,7 @@
             border-radius: 0 0 10px 10px;
         }
 
+        /* 女孩腮红 */
         .cartoon-girl .cheeks {
             position: absolute;
             top: 20px;
@@ -389,6 +447,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩身体 - 连衣裙 */
         .cartoon-girl .body {
             position: absolute;
             top: 36px;
@@ -399,7 +458,9 @@
             background: linear-gradient(180deg, #FF69B4 0%, #E84393 100%);
             border-radius: 8px 8px 15px 15px;
         }
+        }
 
+        /* 女孩手臂 */
         .cartoon-girl .arms {
             position: absolute;
             top: 42px;
@@ -409,6 +470,7 @@
             height: 25px;
         }
 
+        /* 女孩左手 */
         .cartoon-girl .arms::before {
             content: '';
             position: absolute;
@@ -421,6 +483,7 @@
             transform: rotate(-15deg);
         }
 
+        /* 女孩右手 */
         .cartoon-girl .arms::after {
             content: '';
             position: absolute;
@@ -433,6 +496,7 @@
             transform: rotate(15deg);
         }
 
+        /* 女孩左手掌 */
         .cartoon-girl .hand-left {
             position: absolute;
             top: 60px;
@@ -443,6 +507,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩右手掌 */
         .cartoon-girl .hand-right {
             position: absolute;
             top: 60px;
@@ -453,6 +518,7 @@
             border-radius: 50%;
         }
 
+        /* 女孩腿 */
         .cartoon-girl .legs {
             position: absolute;
             top: 78px;
@@ -472,6 +538,7 @@
             border-radius: 0 0 3px 3px;
         }
 
+        /* 装饰太阳 - 更真实的立体效果 */
         .sun {
             position: fixed;
             top: 3%;
@@ -480,11 +547,16 @@
             height: 100px;
             background: radial-gradient(circle at 30% 30%, #FFF8DC 0%, #FFD700 20%, #FFA500 60%, #FF8C00 100%);
             border-radius: 50%;
-            box-shadow: inset -10px -10px 20px rgba(255, 140, 0, 0.5), inset 10px 10px 20px rgba(255, 255, 255, 0.8), 0 0 60px rgba(255, 215, 0, 0.8), 0 0 120px rgba(255, 165, 0, 0.4);
+            box-shadow: 
+                inset -10px -10px 20px rgba(255, 140, 0, 0.5),
+                inset 10px 10px 20px rgba(255, 255, 255, 0.8),
+                0 0 60px rgba(255, 215, 0, 0.8),
+                0 0 120px rgba(255, 165, 0, 0.4);
             animation: pulse 4s infinite ease-in-out;
             z-index: -1;
         }
 
+        /* 太阳光线 */
         .sun-rays {
             position: fixed;
             top: 3%;
@@ -502,11 +574,42 @@
             transform: translate(-50%, -50%);
             width: 180px;
             height: 180px;
-            background: conic-gradient(from 0deg, transparent 0deg, rgba(255, 215, 0, 0.3) 10deg, transparent 20deg, transparent 40deg, rgba(255, 215, 0, 0.3) 50deg, transparent 60deg, transparent 80deg, rgba(255, 215, 0, 0.3) 90deg, transparent 100deg, transparent 120deg, rgba(255, 215, 0, 0.3) 130deg, transparent 140deg, transparent 160deg, rgba(255, 215, 0, 0.3) 170deg, transparent 180deg, transparent 200deg, rgba(255, 215, 0, 0.3) 210deg, transparent 220deg, transparent 240deg, rgba(255, 215, 0, 0.3) 250deg, transparent 260deg, transparent 280deg, rgba(255, 215, 0, 0.3) 290deg, transparent 300deg, transparent 320deg, rgba(255, 215, 0, 0.3) 330deg, transparent 340deg, transparent 360deg);
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                rgba(255, 215, 0, 0.3) 10deg,
+                transparent 20deg,
+                transparent 40deg,
+                rgba(255, 215, 0, 0.3) 50deg,
+                transparent 60deg,
+                transparent 80deg,
+                rgba(255, 215, 0, 0.3) 90deg,
+                transparent 100deg,
+                transparent 120deg,
+                rgba(255, 215, 0, 0.3) 130deg,
+                transparent 140deg,
+                transparent 160deg,
+                rgba(255, 215, 0, 0.3) 170deg,
+                transparent 180deg,
+                transparent 200deg,
+                rgba(255, 215, 0, 0.3) 210deg,
+                transparent 220deg,
+                transparent 240deg,
+                rgba(255, 215, 0, 0.3) 250deg,
+                transparent 260deg,
+                transparent 280deg,
+                rgba(255, 215, 0, 0.3) 290deg,
+                transparent 300deg,
+                transparent 320deg,
+                rgba(255, 215, 0, 0.3) 330deg,
+                transparent 340deg,
+                transparent 360deg
+            );
             border-radius: 50%;
             animation: rotate 20s linear infinite;
         }
 
+        /* 装饰山丘 */
         .hills {
             position: fixed;
             bottom: 0;
@@ -587,8 +690,13 @@
             text-align: center;
         }
 
-        .card.bingchuang { border-top: 5px solid #667eea; }
-        .card.chuzhuo { border-top: 5px solid #f093fb; }
+        .card.bingchuang {
+            border-top: 5px solid #667eea;
+        }
+
+        .card.chuzhuo {
+            border-top: 5px solid #f093fb;
+        }
 
         .avatar {
             width: 100px;
@@ -610,14 +718,32 @@
             object-fit: cover;
         }
 
-        .bingchuang .avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .chuzhuo .avatar { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .bingchuang .avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
 
-        h1 { color: #333; font-size: 28px; margin-bottom: 8px; }
+        .chuzhuo .avatar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
 
-        .age { font-size: 16px; margin-bottom: 20px; }
-        .bingchuang .age { color: #667eea; }
-        .chuzhuo .age { color: #f5576c; }
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .age {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .bingchuang .age {
+            color: #667eea;
+        }
+
+        .chuzhuo .age {
+            color: #f5576c;
+        }
 
         .section {
             background: #f8f9fa;
@@ -627,13 +753,33 @@
             text-align: left;
         }
 
-        .section h2 { font-size: 14px; margin-bottom: 8px; }
-        .bingchuang .section h2 { color: #667eea; }
-        .chuzhuo .section h2 { color: #f5576c; }
+        .section h2 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .section p { color: #555; font-size: 14px; line-height: 1.6; }
+        .bingchuang .section h2 {
+            color: #667eea;
+        }
 
-        .hobbies { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chuzhuo .section h2 {
+            color: #f5576c;
+        }
+
+        .section p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .hobbies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
 
         .hobby-tag {
             color: white;
@@ -642,67 +788,12 @@
             font-size: 12px;
         }
 
-        .bingchuang .hobby-tag { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .chuzhuo .hobby-tag { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-
-        /* 项目聚合区 - 嵌在自我介绍页面底部 */
-        .projects-section {
-            margin-top: 50px;
-            padding: 30px;
-            background: rgba(255,255,255,0.92);
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+        .bingchuang .hobby-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        .projects-title {
-            text-align: center;
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 25px;
-        }
-
-        .projects-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 12px;
-            width: 200px;
-            text-decoration: none;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: block;
-        }
-
-        .project-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.18);
-        }
-
-        .project-img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .project-body { padding: 12px 14px; }
-
-        .project-name {
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .project-date {
-            font-size: 11px;
-            color: #999;
+        .chuzhuo .hobby-tag {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
         .footer {
@@ -712,8 +803,111 @@
             font-size: 14px;
         }
 
+        /* 作品网格 - 一行6列 */
+        .projects-section {
+            margin-top: 50px;
+        }
+
+        .projects-title {
+            text-align: center;
+            color: white;
+            font-size: 22px;
+            margin-bottom: 24px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+        }
+
+        .proj-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .proj-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .proj-thumb {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .proj-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .proj-thumb .proj-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .proj-thumb .proj-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px 8px 6px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .proj-card .proj-name {
+            padding: 8px 8px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            background: white;
+        }
+
+        .proj-card .proj-author {
+            padding: 0 8px 8px;
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+            background: white;
+        }
+
+        @media (max-width: 1100px) {
+            .projects-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .projects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 900px) {
-            .cards-wrapper { flex-direction: column; align-items: center; }
+            .cards-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
@@ -739,6 +933,7 @@
             <div class="pigtail-left"></div>
             <div class="pigtail-right"></div>
             <div class="eyebrows"></div>
+            <div class="lashes"></div>
             <div class="eyes"></div>
             <div class="nose"></div>
             <div class="mouth"></div>
@@ -751,70 +946,232 @@
         <div class="legs"></div>
     </div>
     <div class="container">
-        <h1 class="title">你好，我们是创和卓！</h1>
+        <h1 class="title">👋 你好，我们是创和卓！</h1>
         
         <div class="cards-wrapper">
+            <!-- 刘秉创 -->
             <div class="card bingchuang">
                 <div class="avatar"><img src="bingchuang_avatar6.jpg" alt="创"></div>
                 <h1>创</h1>
                 <p class="age">8岁 · 小学二年级</p>
+                
                 <div class="section">
-                    <h2>关于我</h2>
+                    <h2>🎯 关于我</h2>
                     <p>我是卓的弟弟，在广州市上二年级。我喜欢蓝色，是个充满好奇心的小男孩！</p>
                 </div>
+                
                 <div class="section">
-                    <h2>我的爱好</h2>
+                    <h2>❤️ 我的爱好</h2>
                     <div class="hobbies">
-                        <span class="hobby-tag">玩游戏</span>
-                        <span class="hobby-tag">无人机</span>
-                        <span class="hobby-tag">看百科全书</span>
+                        <span class="hobby-tag">🎮 玩游戏</span>
+                        <span class="hobby-tag">🚁 无人机</span>
+                        <span class="hobby-tag">📖 看百科全书</span>
                     </div>
                 </div>
+                
                 <div class="section">
-                    <h2>我的梦想</h2>
+                    <h2>🌟 我的梦想</h2>
                     <p>长大后想成为一名警察，保护大家的安全！</p>
                 </div>
             </div>
 
+            <!-- 刘楚卓 -->
             <div class="card chuzhuo">
                 <div class="avatar"><img src="chuzhuo_avatar5.jpg" alt="卓"></div>
                 <h1>卓</h1>
                 <p class="age">9岁 · 小学三年级</p>
+                
                 <div class="section">
-                    <h2>关于我</h2>
+                    <h2>🎯 关于我</h2>
                     <p>我是创的姐姐，在广州市上三年级。我喜欢粉色，是一个爱看书、爱画画的小姑娘！</p>
                 </div>
+                
                 <div class="section">
-                    <h2>我的爱好</h2>
+                    <h2>❤️ 我的爱好</h2>
                     <div class="hobbies">
-                        <span class="hobby-tag">画画</span>
-                        <span class="hobby-tag">看书</span>
-                        <span class="hobby-tag">玩游戏</span>
-                        <span class="hobby-tag">无人机</span>
-                        <span class="hobby-tag">星之卡比</span>
+                        <span class="hobby-tag">🎨 画画</span>
+                        <span class="hobby-tag">📚 看书</span>
+                        <span class="hobby-tag">🎮 玩游戏</span>
+                        <span class="hobby-tag">🚁 无人机</span>
+                        <span class="hobby-tag">⭐ 星之卡比</span>
                     </div>
                 </div>
+                
                 <div class="section">
-                    <h2>我的梦想</h2>
+                    <h2>🌟 我的梦想</h2>
                     <p>长大后想成为一名老师，教小朋友们学习知识！</p>
                 </div>
             </div>
         </div>
 
-        <!-- 项目聚合区 -->
+        <!-- 我们的作品 -->
         <div class="projects-section">
             <h2 class="projects-title">我们的作品</h2>
             <div class="projects-grid">
-                <a class="project-card" href="guess_number/">
-                    <img class="project-img" src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=400&h=300&fit=crop" alt="猜数字">
-                    <div class="project-body">
-                        <div class="project-name">猜数字大战</div>
-                        <div class="project-date">第1周 · 2026年4月</div>
+
+                <!-- 第1周：猜数字大战 -->
+                <a class="proj-card" href="guess_number/">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;">🎮</div>
+                        <div class="proj-label">第一周</div>
                     </div>
+                    <div class="proj-name">猜数字大战</div>
+                    <div class="proj-author">创 & 卓</div>
                 </a>
+
+                <!-- 第2周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第二周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第3周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第三周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第4周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第四周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第5周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第五周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第6周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第六周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第7周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第七周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第8周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第八周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第9周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第九周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第10周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第11周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十一周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第12周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十二周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第13周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十三周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第14周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十四周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第15周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十五周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
+                <!-- 第16周 -->
+                <div class="proj-card">
+                    <div class="proj-thumb">
+                        <div class="proj-placeholder" style="background:linear-gradient(135deg,#e0e0e0,#bdbdbd);color:#ccc;">?</div>
+                        <div class="proj-label">第十六周</div>
+                    </div>
+                    <div class="proj-name">待添加</div>
+                    <div class="proj-author">-</div>
+                </div>
+
             </div>
         </div>
-        
+
         <p class="footer">用 AI 辅助制作 · 2026年</p>
     </div>
 </body>
