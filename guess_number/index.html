@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜数字游戏 - 卓 vs 创</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        /* 开始页面 */
+        .start-page h1 {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .start-page .subtitle {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        .players {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .player {
+            text-align: center;
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 10px;
+            color: white;
+        }
+
+        .player.zhuo .player-avatar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .player.chuang .player-avatar {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+
+        /* 卓是粉色女生，创是蓝色男生 */
+
+        .player-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .vs {
+            font-size: 30px;
+            font-weight: bold;
+            color: #666;
+            align-self: center;
+        }
+
+        .go-button {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 30px rgba(56, 239, 125, 0.4);
+        }
+
+        .go-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(56, 239, 125, 0.5);
+        }
+
+        /* 游戏页面 */
+        .game-page {
+            display: none;
+        }
+
+        .game-page.active {
+            display: block;
+        }
+
+        .start-page.hidden {
+            display: none;
+        }
+
+        .mystery-hint {
+            background: #fff3cd;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .mystery-hint p {
+            color: #856404;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 回合数 */
+        .round-info {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .round-info span {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* 积分显示 */
+        .score-section {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+
+        .score-box {
+            padding: 10px 25px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .score-box.zhuo {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .score-box.chuang {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+            color: white;
+        }
+
+        /* 最终结果 */
+        .final-result {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .final-result.active {
+            display: block;
+            animation: winner-pop 0.5s ease-out;
+        }
+
+        .final-result.zhuo-wins {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .final-result.chuang-wins {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+            color: white;
+        }
+
+        .final-result.draw {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .final-score {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        /* 两块玩家区域 */
+        .game-area {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .player-section {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 20px 15px;
+        }
+
+        .player-section.zhuo {
+            border: 3px solid #f5576c;
+        }
+
+        .player-section.chuang {
+            border: 3px solid #005bea;
+        }
+
+        .player-section.winner {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: 3px solid #27ae60;
+        }
+
+        .player-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .player-header .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+        }
+
+        .zhuo .avatar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .chuang .avatar {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+
+        .player-section.winner .avatar {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .player-header .name {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .zhuo .name {
+            color: #f5576c;
+        }
+
+        .chuang .name {
+            color: #005bea;
+        }
+
+        .player-section.winner .name {
+            color: white;
+        }
+
+        .guess-input-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .guess-input-row input {
+            width: 70px;
+            height: 50px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            outline: none;
+        }
+
+        .guess-input-row input:focus {
+            border-color: #667eea;
+        }
+
+        .guess-input-row input:disabled {
+            background: #e0e0e0;
+            cursor: not-allowed;
+        }
+
+        /* 去掉默认的上下箭头 */
+        .guess-input-row input::-webkit-outer-spin-button,
+        .guess-input-row input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .guess-input-row input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* 加减按钮 */
+        .spin-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .spin-btn {
+            width: 30px;
+            height: 22px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .spin-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .spin-btn:active {
+            transform: scale(0.95);
+        }
+
+        .spin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 揭晓按钮 */
+        .reveal-section {
+            margin-bottom: 15px;
+        }
+
+        .reveal-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .reveal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(245, 87, 108, 0.5);
+        }
+
+        .reveal-button:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 结果提示 */
+        .result-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            min-height: 27px;
+        }
+
+        .result-message.winner {
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 12px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-message.continue {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* 历史记录 */
+        .history-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .history-section.active {
+            display: block;
+        }
+
+        .history-title {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .history-area {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+
+        .history-column {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .history-column.zhuo {
+            border: 2px solid #f5576c;
+        }
+
+        .history-column.chuang {
+            border: 2px solid #005bea;
+        }
+
+        .history-column-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .zhuo .history-column-name {
+            color: #f5576c;
+        }
+
+        .chuang .history-column-name {
+            color: #005bea;
+        }
+
+        .history-items {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .history-item {
+            padding: 2px 0;
+        }
+
+        .history-item.correct {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        /* 获胜公告 */
+        .winner-announcement {
+            font-size: 32px;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .winner-announcement.active {
+            display: block;
+        }
+
+        .winner-announcement.zhuo {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .winner-announcement.chuang {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+            color: white;
+        }
+
+        /* 神秘数字 */
+        .secret-reveal {
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .secret-reveal p {
+            color: #856404;
+            font-size: 18px;
+        }
+
+        .secret-reveal span {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .play-again {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .play-again:hover {
+            transform: scale(1.05);
+        }
+
+        .continue-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 10px;
+        }
+
+        .continue-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 烟花动画 */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            animation: confetti-fall 3s ease-out forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0.5);
+            }
+        }
+
+        @keyframes confetti-burst {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.2);
+            }
+        }
+
+        .confetti.burst {
+            animation: confetti-burst 1s ease-out forwards;
+        }
+
+        /* 获胜者动画 */
+        .winner-announcement.active {
+            animation: winner-pop 0.5s ease-out;
+        }
+
+        @keyframes winner-pop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .player-section.winner {
+            animation: winner-glow 0.8s ease-out;
+        }
+
+        @keyframes winner-glow {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(39, 174, 96, 0);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(39, 174, 96, 0.8);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+            }
+        }
+
+        /* 卡通小人庆祝区域 */
+        .celebration-area {
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 80px;
+            margin: 20px 0;
+            height: 150px;
+        }
+
+        .celebration-area.active {
+            display: flex;
+        }
+
+        /* 小人容器 */
+        .character {
+            position: relative;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 头 */
+        .character .head {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 身体 */
+        .character .body {
+            width: 40px;
+            height: 50px;
+            border-radius: 20px 20px 10px 10px;
+            margin-top: -5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 腿 */
+        .character .legs {
+            display: flex;
+            gap: 5px;
+            margin-top: -5px;
+        }
+
+        .character .leg {
+            width: 12px;
+            height: 25px;
+            border-radius: 5px;
+        }
+
+        /* 手臂 */
+        .character .arms {
+            position: absolute;
+            top: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .character .arm {
+            width: 12px;
+            height: 35px;
+            border-radius: 6px;
+            transform-origin: top center;
+        }
+
+        /* 男生样式（卓 - 粉红色） */
+        .character.boy .head {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .character.boy .body {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .character.boy .leg {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .character.boy .arm {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        /* 女生样式（卓 - 粉色） */
+        .character.girl .head {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .character.girl .body {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .character.girl .leg {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .character.girl .arm {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        /* 男生样式（创 - 蓝色） */
+        .character.boy .head {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+
+        .character.boy .body {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+
+        .character.boy .leg {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+
+        .character.boy .arm {
+            background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%);
+        }
+
+        /* 跳舞动画（赢家） */
+        .character.dancing {
+            animation: dance 0.5s ease-in-out infinite;
+        }
+
+        @keyframes dance {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .character.dancing .arm {
+            animation: wave 0.5s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(-30deg); }
+            50% { transform: rotate(30deg); }
+        }
+
+        /* 鼓掌动画（输家） */
+        .character.clapping .arm {
+            animation: clap 0.3s ease-in-out infinite;
+        }
+
+        .character.clapping .arm:first-child {
+            animation-name: clap-left;
+        }
+
+        .character.clapping .arm:last-child {
+            animation-name: clap-right;
+        }
+
+        @keyframes clap-left {
+            0%, 100% { transform: rotate(-20deg); }
+            50% { transform: rotate(40deg); }
+        }
+
+        @keyframes clap-right {
+            0%, 100% { transform: rotate(20deg); }
+            50% { transform: rotate(-40deg); }
+        }
+
+        /* 小人名字 */
+        .character .name-tag {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 25px 15px;
+            }
+
+            .players {
+                gap: 20px;
+            }
+
+            .player-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+
+            .game-area {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .history-area {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 开始页面 -->
+        <div class="start-page" id="startPage">
+            <h1>猜数字游戏</h1>
+            <p class="subtitle">电脑选了一个1-20之间的数字<br>看看谁能先猜到！</p>
+            
+            <div class="players">
+                <div class="player zhuo">
+                    <div class="player-avatar">卓</div>
+                    <div class="player-name">卓</div>
+                </div>
+                <div class="vs">VS</div>
+                <div class="player chuang">
+                    <div class="player-avatar">创</div>
+                    <div class="player-name">创</div>
+                </div>
+            </div>
+            
+            <button class="go-button" onclick="startGame()">GO!</button>
+        </div>
+
+        <!-- 游戏页面 -->
+        <div class="game-page" id="gamePage">
+            <div class="mystery-hint">
+                <p>电脑选了一个 1-20 之间的数字</p>
+            </div>
+            
+            <div class="round-info">
+                第 <span id="roundNumber">1</span> 轮 / 共 5 局
+            </div>
+            
+            <div class="score-section">
+                <div class="score-box zhuo">卓: <span id="zhuoScore">0</span> 分</div>
+                <div class="score-box chuang">创: <span id="chuangScore">0</span> 分</div>
+            </div>
+            
+            <div class="game-area">
+                <!-- 卓的区域 -->
+                <div class="player-section zhuo" id="zhuoSection">
+                    <div class="player-header">
+                        <div class="avatar">卓</div>
+                        <div class="name">卓</div>
+                    </div>
+                    <div class="guess-input-row">
+                        <input type="number" id="zhuoInput" min="1" max="20" placeholder="1-20">
+                        <div class="spin-buttons">
+                            <button type="button" class="spin-btn" id="zhuoPlus">+</button>
+                            <button type="button" class="spin-btn" id="zhuoMinus">−</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 创的区域 -->
+                <div class="player-section chuang" id="chuangSection">
+                    <div class="player-header">
+                        <div class="avatar">创</div>
+                        <div class="name">创</div>
+                    </div>
+                    <div class="guess-input-row">
+                        <input type="number" id="chuangInput" min="1" max="20" placeholder="1-20">
+                        <div class="spin-buttons">
+                            <button type="button" class="spin-btn" id="chuangPlus">+</button>
+                            <button type="button" class="spin-btn" id="chuangMinus">−</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="reveal-section">
+                <button class="reveal-button" id="revealBtn" onclick="revealAnswer()">揭晓答案</button>
+            </div>
+            
+            <div class="result-message" id="resultMessage"></div>
+            
+            <!-- 历史记录 -->
+            <div class="history-section" id="historySection">
+                <div class="history-title">历史记录</div>
+                <div class="history-area">
+                    <div class="history-column zhuo">
+                        <div class="history-column-name">卓</div>
+                        <div class="history-items" id="zhuoHistory"></div>
+                    </div>
+                    <div class="history-column chuang">
+                        <div class="history-column-name">创</div>
+                        <div class="history-items" id="chuangHistory"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 获胜公告 -->
+            <div class="winner-announcement" id="winnerAnnouncement"></div>
+            
+            <!-- 卡通小人庆祝区域 -->
+            <div class="celebration-area" id="celebrationArea">
+                <div class="character girl" id="boyCharacter">
+                    <div class="head">
+                    </div>
+                    <div class="body"></div>
+                    <div class="arms">
+                        <div class="arm"></div>
+                        <div class="arm"></div>
+                    </div>
+                    <div class="legs">
+                        <div class="leg"></div>
+                        <div class="leg"></div>
+                    </div>
+                    <div class="name-tag">卓</div>
+                </div>
+                <div class="character boy" id="girlCharacter">
+                    <div class="head">
+                    </div>
+                    <div class="body"></div>
+                    <div class="arms">
+                        <div class="arm"></div>
+                        <div class="arm"></div>
+                    </div>
+                    <div class="legs">
+                        <div class="leg"></div>
+                        <div class="leg"></div>
+                    </div>
+                    <div class="name-tag">创</div>
+                </div>
+            </div>
+            
+            <!-- 最终结果 -->
+            <div class="final-result" id="finalResult"></div>
+            
+            <!-- 神秘数字 -->
+            <div class="secret-reveal" id="secretReveal" style="display:none;">
+                <p>神秘数字是 <span id="secretNumber">?</span></p>
+            </div>
+            
+            <!-- 按钮区域 -->
+            <div id="buttonArea"></div>
+        </div>
+    </div>
+
+    <script>
+        let secretNumber;
+        let round = 1;
+        let attempt = 1;  // 当前是第几次猜测
+        let gameOver = false;
+        let zhuoScore = 0;
+        let chuangScore = 0;
+        const totalRounds = 5;
+        const maxAttempts = 5;
+        
+        // 本局猜测历史
+        let zhuoGuesses = [];
+        let chuangGuesses = [];
+        
+        // 全局历史记录
+        let gameHistory = [];
+
+        function startGame() {
+            // 重置分数
+            zhuoScore = 0;
+            chuangScore = 0;
+            round = 1;
+            attempt = 1;
+            gameOver = false;
+            zhuoGuesses = [];
+            chuangGuesses = [];
+            gameHistory = [];
+            
+            // 随机选择1-20的数字
+            secretNumber = Math.floor(Math.random() * 20) + 1;
+            console.log('秘密数字是:', secretNumber);
+            
+            // 清空输入框
+            document.getElementById('zhuoInput').value = '';
+            document.getElementById('chuangInput').value = '';
+            document.getElementById('zhuoInput').disabled = false;
+            document.getElementById('chuangInput').disabled = false;
+            
+            // 重置UI
+            document.getElementById('roundNumber').textContent = round;
+            document.getElementById('zhuoScore').textContent = zhuoScore;
+            document.getElementById('chuangScore').textContent = chuangScore;
+            document.getElementById('zhuoSection').classList.remove('winner');
+            document.getElementById('chuangSection').classList.remove('winner');
+            document.getElementById('resultMessage').textContent = '';
+            document.getElementById('resultMessage').className = 'result-message';
+            document.getElementById('historySection').classList.remove('active');
+            document.getElementById('zhuoHistory').innerHTML = '';
+            document.getElementById('chuangHistory').innerHTML = '';
+            document.getElementById('winnerAnnouncement').classList.remove('active');
+            document.getElementById('winnerAnnouncement').style.display = 'none';
+            document.getElementById('secretReveal').style.display = 'none';
+            document.getElementById('buttonArea').innerHTML = '';
+            document.getElementById('revealBtn').disabled = false;
+            document.getElementById('finalResult').classList.remove('active');
+            document.getElementById('finalResult').style.display = 'none';
+            document.getElementById('celebrationArea').classList.remove('active');
+            document.getElementById('boyCharacter').classList.remove('dancing', 'clapping');
+            document.getElementById('girlCharacter').classList.remove('dancing', 'clapping');
+            
+            // 显示猜测次数
+            updateAttemptDisplay();
+            
+            // 切换到游戏页面
+            document.getElementById('startPage').classList.add('hidden');
+            document.getElementById('gamePage').classList.add('active');
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // 聚焦到卓的输入框
+            document.getElementById('zhuoInput').focus();
+        }
+
+        function goBackToStart() {
+            // 回到封面页
+            document.getElementById('startPage').classList.remove('hidden');
+            document.getElementById('gamePage').classList.remove('active');
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function updateAttemptDisplay() {
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = `第 ${attempt} / ${maxAttempts} 次猜测`;
+            resultMessage.className = 'result-message';
+        }
+
+        function revealAnswer() {
+            const zhuoGuess = parseInt(document.getElementById('zhuoInput').value);
+            const chuangGuess = parseInt(document.getElementById('chuangInput').value);
+            
+            // 验证输入
+            if (isNaN(zhuoGuess) || zhuoGuess < 1 || zhuoGuess > 20) {
+                alert('卓，请输入1-20之间的数字！');
+                document.getElementById('zhuoInput').focus();
+                return;
+            }
+            
+            if (isNaN(chuangGuess) || chuangGuess < 1 || chuangGuess > 20) {
+                alert('创，请输入1-20之间的数字！');
+                document.getElementById('chuangInput').focus();
+                return;
+            }
+            
+            // 显示历史记录区域
+            document.getElementById('historySection').classList.add('active');
+            
+            const zhuoHistory = document.getElementById('zhuoHistory');
+            const chuangHistory = document.getElementById('chuangHistory');
+            
+            // 处理卓的猜测
+            let zhuoHint = '';
+            if (zhuoGuess === secretNumber) {
+                zhuoHint = '<span style="color:#27ae60;font-weight:bold;">✓</span>';
+            } else if (zhuoGuess > secretNumber) {
+                zhuoHint = '<span style="color:#e74c3c;">(大)</span>';
+            } else {
+                zhuoHint = '<span style="color:#3498db;">(小)</span>';
+            }
+            zhuoGuesses.push({guess: zhuoGuess, hint: zhuoHint, correct: zhuoGuess === secretNumber});
+            zhuoHistory.innerHTML = zhuoGuesses.map(g => `${g.guess}${g.hint}`).join(' → ');
+            if (zhuoGuess === secretNumber) {
+                zhuoHistory.innerHTML += ' <span style="color:#27ae60;font-weight:bold;">猜对!</span>';
+            }
+            
+            // 处理创的猜测
+            let chuangHint = '';
+            if (chuangGuess === secretNumber) {
+                chuangHint = '<span style="color:#27ae60;font-weight:bold;">✓</span>';
+            } else if (chuangGuess > secretNumber) {
+                chuangHint = '<span style="color:#e74c3c;">(大)</span>';
+            } else {
+                chuangHint = '<span style="color:#3498db;">(小)</span>';
+            }
+            chuangGuesses.push({guess: chuangGuess, hint: chuangHint, correct: chuangGuess === secretNumber});
+            chuangHistory.innerHTML = chuangGuesses.map(g => `${g.guess}${g.hint}`).join(' → ');
+            if (chuangGuess === secretNumber) {
+                chuangHistory.innerHTML += ' <span style="color:#27ae60;font-weight:bold;">猜对!</span>';
+            }
+            
+            // 判断结果
+            const zhuoCorrect = zhuoGuess === secretNumber;
+            const chuangCorrect = chuangGuess === secretNumber;
+            const resultMessage = document.getElementById('resultMessage');
+            
+            // 检查是否有人猜对
+            if (zhuoCorrect || chuangCorrect) {
+                // 有人猜对，结束这一局
+                if (zhuoCorrect) {
+                    zhuoScore++;
+                    document.getElementById('zhuoScore').textContent = zhuoScore;
+                    document.getElementById('zhuoSection').classList.add('winner');
+                }
+                if (chuangCorrect) {
+                    chuangScore++;
+                    document.getElementById('chuangScore').textContent = chuangScore;
+                    document.getElementById('chuangSection').classList.add('winner');
+                }
+                
+                // 保存到全局历史
+                gameHistory.push({
+                    round: round,
+                    zhuoGuesses: [...zhuoGuesses],
+                    chuangGuesses: [...chuangGuesses],
+                    winner: zhuoCorrect && chuangCorrect ? 'both' : (zhuoCorrect ? 'zhuo' : 'chuang')
+                });
+                
+                // 显示结果
+                if (zhuoCorrect && chuangCorrect) {
+                    resultMessage.textContent = '两人都猜对了！各得1分！';
+                    resultMessage.className = 'result-message winner';
+                } else if (zhuoCorrect) {
+                    resultMessage.textContent = '卓猜对了！得1分！';
+                    resultMessage.className = 'result-message winner';
+                } else {
+                    resultMessage.textContent = '创猜对了！得1分！';
+                    resultMessage.className = 'result-message winner';
+                }
+                
+                document.getElementById('revealBtn').disabled = true;
+                document.getElementById('zhuoInput').disabled = true;
+                document.getElementById('chuangInput').disabled = true;
+                
+                // 检查是否5局结束
+                if (round >= totalRounds) {
+                    setTimeout(showFinalResult, 1500);
+                } else {
+                    const buttonArea = document.getElementById('buttonArea');
+                    buttonArea.innerHTML = '<button class="continue-btn" onclick="nextRound()">下一局</button>';
+                }
+                return;
+            }
+            
+            // 没人猜对，检查是否还有机会
+            if (attempt >= maxAttempts) {
+                // 5次机会用完，没人猜对
+                // 保存到全局历史
+                gameHistory.push({
+                    round: round,
+                    zhuoGuesses: [...zhuoGuesses],
+                    chuangGuesses: [...chuangGuesses],
+                    winner: 'none'
+                });
+                
+                resultMessage.textContent = '都没猜对，不得分';
+                resultMessage.className = 'result-message';
+                document.getElementById('revealBtn').disabled = true;
+                document.getElementById('zhuoInput').disabled = true;
+                document.getElementById('chuangInput').disabled = true;
+                
+                // 检查是否5局结束
+                if (round >= totalRounds) {
+                    setTimeout(showFinalResult, 1500);
+                } else {
+                    const buttonArea = document.getElementById('buttonArea');
+                    buttonArea.innerHTML = '<button class="continue-btn" onclick="nextRound()">下一局</button>';
+                }
+                return;
+            }
+            
+            // 还有机会，继续
+            attempt++;
+            updateAttemptDisplay();
+            
+            // 清空输入框继续猜
+            document.getElementById('zhuoInput').value = '';
+            document.getElementById('chuangInput').value = '';
+            document.getElementById('zhuoInput').focus();
+        }
+
+        function nextRound() {
+            // 生成新的神秘数字
+            secretNumber = Math.floor(Math.random() * 20) + 1;
+            console.log('新秘密数字是:', secretNumber);
+            
+            // 重置本局状态
+            attempt = 1;
+            zhuoGuesses = [];
+            chuangGuesses = [];
+            
+            // 重置UI
+            document.getElementById('zhuoInput').value = '';
+            document.getElementById('chuangInput').value = '';
+            document.getElementById('zhuoInput').disabled = false;
+            document.getElementById('chuangInput').disabled = false;
+            document.getElementById('revealBtn').disabled = false;
+            
+            document.getElementById('resultMessage').textContent = '';
+            document.getElementById('resultMessage').className = 'result-message';
+            document.getElementById('historySection').classList.remove('active');
+            document.getElementById('zhuoHistory').innerHTML = '';
+            document.getElementById('chuangHistory').innerHTML = '';
+            document.getElementById('zhuoSection').classList.remove('winner');
+            document.getElementById('chuangSection').classList.remove('winner');
+            document.getElementById('buttonArea').innerHTML = '';
+            
+            // 更新回合数
+            round++;
+            document.getElementById('roundNumber').textContent = round;
+            
+            // 更新猜测次数显示
+            updateAttemptDisplay();
+            document.getElementById('resultMessage').textContent = `第 ${attempt} / ${maxAttempts} 次猜测`;
+            
+            // 聚焦到卓的输入框
+            document.getElementById('zhuoInput').focus();
+        }
+
+        function showFinalResult() {
+            const finalResult = document.getElementById('finalResult');
+            const winnerAnnouncement = document.getElementById('winnerAnnouncement');
+            const secretReveal = document.getElementById('secretReveal');
+            const buttonArea = document.getElementById('buttonArea');
+            const celebrationArea = document.getElementById('celebrationArea');
+            const boyCharacter = document.getElementById('boyCharacter');
+            const girlCharacter = document.getElementById('girlCharacter');
+            
+            // 显示神秘数字
+            secretReveal.style.display = 'block';
+            document.getElementById('secretNumber').textContent = secretNumber;
+            
+            // 隐藏单轮获胜公告
+            winnerAnnouncement.style.display = 'none';
+            
+            // 显示最终结果
+            let resultText = '';
+            let resultClass = '';
+            
+            if (zhuoScore > chuangScore) {
+                // 卓赢了 - 卓跳舞，创鼓掌
+                resultText = '最终结果：卓获胜！';
+                resultClass = 'zhuo-wins';
+                boyCharacter.classList.add('dancing');
+                boyCharacter.classList.remove('clapping');
+                girlCharacter.classList.add('clapping');
+                girlCharacter.classList.remove('dancing');
+            } else if (chuangScore > zhuoScore) {
+                // 创赢了 - 创跳舞，卓鼓掌
+                resultText = '最终结果：创获胜！';
+                resultClass = 'chuang-wins';
+                girlCharacter.classList.add('dancing');
+                girlCharacter.classList.remove('clapping');
+                boyCharacter.classList.add('clapping');
+                boyCharacter.classList.remove('dancing');
+            } else {
+                // 平局 - 两人一起跳舞
+                resultText = '最终结果：平局！';
+                resultClass = 'draw';
+                boyCharacter.classList.add('dancing');
+                boyCharacter.classList.remove('clapping');
+                girlCharacter.classList.add('dancing');
+                girlCharacter.classList.remove('clapping');
+            }
+            
+            // 显示庆祝区域
+            celebrationArea.classList.add('active');
+            
+            finalResult.innerHTML = `
+                <div class="final-score">卓 ${zhuoScore} : ${chuangScore} 创</div>
+                ${resultText}
+            `;
+            finalResult.className = 'final-result ' + resultClass + ' active';
+            
+            buttonArea.innerHTML = '<button class="play-again" onclick="goBackToStart()">再玩一次</button>';
+            
+            // 自动滚动到结果画面
+            setTimeout(() => {
+                finalResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+            
+            // 放烟花庆祝！
+            launchConfetti();
+        }
+
+        // 烟花庆祝效果
+        function launchConfetti() {
+            const colors = ['#f5576c', '#764ba2', '#11998e', '#38ef7d', '#f093fb', '#667eea', '#FFD700', '#FF69B4'];
+            
+            // 连续放多波烟花
+            for (let wave = 0; wave < 3; wave++) {
+                setTimeout(() => {
+                    for (let i = 0; i < 30; i++) {
+                        setTimeout(() => {
+                            createConfetti(colors);
+                        }, i * 50);
+                    }
+                }, wave * 500);
+            }
+        }
+
+        function createConfetti(colors) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // 随机颜色
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 随机位置
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = Math.random() * 50 + 'vh';
+            
+            // 随机大小
+            const size = Math.random() * 10 + 8;
+            confetti.style.width = size + 'px';
+            confetti.style.height = size + 'px';
+            
+            // 添加动画
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            
+            document.body.appendChild(confetti);
+            
+            // 动画结束后删除
+            setTimeout(() => {
+                confetti.remove();
+            }, 4000);
+        }
+
+        // 允许按回车键切换输入框
+        document.getElementById('zhuoInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('chuangInput').focus();
+            }
+        });
+
+        document.getElementById('chuangInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (!gameOver && !document.getElementById('revealBtn').disabled) {
+                    revealAnswer();
+                }
+            }
+        });
+
+        // 加减数字按钮
+        function adjustNumber(player, delta) {
+            const input = document.getElementById(player + 'Input');
+            let value = parseInt(input.value) || 1;
+            value += delta;
+            if (value < 1) value = 1;
+            if (value > 20) value = 20;
+            input.value = value;
+        }
+
+        // 绑定加减按钮事件
+        document.getElementById('zhuoPlus').addEventListener('click', function() { adjustNumber('zhuo', 1); });
+        document.getElementById('zhuoMinus').addEventListener('click', function() { adjustNumber('zhuo', -1); });
+        document.getElementById('chuangPlus').addEventListener('click', function() { adjustNumber('chuang', 1); });
+        document.getElementById('chuangMinus').addEventListener('click', function() { adjustNumber('chuang', -1); });
+    </script>
+</body>
+</html>
