@@ -984,12 +984,12 @@
             
             <!-- 按钮区域 -->
             <div id="buttonArea"></div>
-            
-            <!-- 返回首页 -->
-            <div style="text-align:center; margin-top:20px;">
-                <a href="../" class="home-btn">← 返回首页</a>
-            </div>
         </div>
+    </div>
+
+    <!-- 返回首页（独立，不受页面切换影响） -->
+    <div style="position:fixed; left:50%; bottom:30px; transform:translateX(-50%); z-index:99999;">
+        <a href="../" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#667eea,#764ba2); color:white; text-decoration:none; padding:14px 32px; border-radius:30px; font-size:16px; font-weight:bold; box-shadow:0 4px 15px rgba(102,126,234,0.5); transition:all 0.3s;">← 返回首页</a>
     </div>
 
     <script>
