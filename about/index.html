@@ -20,6 +20,32 @@
             overflow-x: hidden;
         }
 
+        /* 返回首页按钮 */
+        .home-btn {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            z-index: 9999;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.95);
+            color: #4a90d9;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: white;
+        }
+
         /* 皮克斯风格云朵 - 移到两侧避免遮挡内容 */
         body::before {
             content: '';
@@ -994,5 +1020,6 @@
 
         <p class="footer">用 AI 辅助制作 · 2026年</p>
     </div>
+<a href="../" class="home-btn">← 返回首页</a>
 </body>
 </html>
