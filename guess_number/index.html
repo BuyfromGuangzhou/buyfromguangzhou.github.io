@@ -23,7 +23,9 @@
 
         /* 返回首页按钮 */
         .home-btn {
-            display: inline-flex;
+            display: block;
+            width: fit-content;
+            margin: 25px auto 0;
             align-items: center;
             justify-content: center;
             gap: 6px;
@@ -37,7 +39,6 @@
             box-shadow: 0 4px 15px rgba(102,126,234,0.4);
             transition: all 0.3s ease;
             cursor: pointer;
-            margin-top: 25px;
         }
         .home-btn:hover {
             transform: translateY(-2px);
@@ -985,7 +986,9 @@
             <div id="buttonArea"></div>
             
             <!-- 返回首页 -->
-            <a href="../" class="home-btn">← 返回首页</a>
+            <div style="text-align:center; margin-top:20px;">
+                <a href="../" class="home-btn">← 返回首页</a>
+            </div>
         </div>
     </div>
 
