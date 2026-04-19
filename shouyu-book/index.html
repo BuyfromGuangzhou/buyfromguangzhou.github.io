@@ -16,29 +16,26 @@
         }
 
         /* 返回首页按钮 */
-        .home-btn {
-            position: fixed;
-            left: 20px;
-            bottom: 20px;
-            z-index: 9999;
+        .home-link {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(255,215,0,0.95);
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
             color: #2c1810;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 25px;
-            font-size: 14px;
+            padding: 14px 36px;
+            border-radius: 30px;
+            font-size: 17px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(255,215,0,0.4);
             transition: all 0.3s ease;
             cursor: pointer;
+            margin-top: 18px;
         }
-        .home-btn:hover {
+        .home-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-            background: #ffd700;
+            box-shadow: 0 6px 22px rgba(255,215,0,0.6);
         }
         .book-title { color: #ffd700; font-size: 32px; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(255,215,0,0.3); letter-spacing: 4px; }
         .book-container { position: relative; width: 820px; height: 580px; }
@@ -491,8 +488,11 @@ document.addEventListener('keydown', e => {
     if(e.key === 'ArrowRight') changePage(1);
     if(e.key === 'ArrowLeft') changePage(-1);
 });
+
 </script>
 
-<a href="../" class="home-btn">← 返回首页</a>
+<div style="text-align:center; margin-top:15px;">
+    <a href="../" class="home-link">← 返回首页</a>
+</div>
 </body>
 </html>

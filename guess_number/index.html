@@ -23,28 +23,25 @@
 
         /* 返回首页按钮 */
         .home-btn {
-            position: fixed;
-            left: 20px;
-            bottom: 20px;
-            z-index: 9999;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
-            background: rgba(255,255,255,0.95);
-            color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 25px;
-            font-size: 14px;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
             transition: all 0.3s ease;
             cursor: pointer;
+            margin-top: 25px;
         }
         .home-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            background: white;
+            box-shadow: 0 6px 20px rgba(102,126,234,0.5);
         }
 
         .container {
@@ -1399,6 +1396,9 @@
         document.getElementById('chuangPlus').addEventListener('click', function() { adjustNumber('chuang', 1); });
         document.getElementById('chuangMinus').addEventListener('click', function() { adjustNumber('chuang', -1); });
     </script>
-<a href="../" class="home-btn">← 返回首页</a>
+
+<div style="text-align:center; padding:10px 0 30px;">
+    <a href="../" class="home-btn">← 返回首页</a>
+</div>
 </body>
 </html>
