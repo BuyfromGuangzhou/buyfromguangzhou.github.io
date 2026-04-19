@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物知识卡片集</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(180deg, #a8e6cf 0%, #dcedc1 40%, #fff5e6 70%, #ffe4b5 100%);
+            min-height: 100vh;
+            padding: 30px 20px 80px;
+        }
+
+        /* 页面标题 */
+        .page-title {
+            text-align: center;
+            font-size: 36px;
+            color: #2d6a4f;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.7);
+        }
+        .page-subtitle {
+            text-align: center;
+            color: #52b788;
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        /* 目标说明 */
+        .goal-banner {
+            max-width: 700px;
+            margin: 0 auto 35px;
+            background: rgba(255,255,255,0.75);
+            border-radius: 18px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 3px 12px rgba(45,106,79,0.1);
+        }
+        .goal-icon { font-size: 22px; }
+        .goal-text { color: #40916c; font-size: 15px; line-height: 1.6; }
+
+        /* 动物列表 */
+        .animal-list {
+            list-style: none;
+            max-width: 500px;
+            margin: 0 auto 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        .animal-list li {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 16px;
+            color: #444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            user-select: none;
+        }
+        .animal-list li:hover, .animal-list li.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(82,183,136,0.3);
+            background: linear-gradient(135deg, #a8e6cf, #88d8b0);
+        }
+        .animal-list li .emoji { font-size: 22px; }
+        .animal-list li.active { font-weight: bold; color: #1b4332; }
+
+        /* 卡片容器 */
+        .card-container {
+            max-width: 600px;
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        /* 卡片 - 皮克斯风格 */
+        .card {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.12),
+                0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            animation: cardIn 0.5s ease;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 16px 48px rgba(0,0,0,0.15),
+                0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* 卡片头部 */
+        .card-header {
+            padding: 28px 30px 18px;
+            text-align: center;
+            position: relative;
+        }
+        /* 不同动物不同主题色 */
+        .card[data-animal="turtle"] .card-header { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+        .card[data-animal="frog"] .card-header { background: linear-gradient(135deg, #55efc4, #00b894); }
+        .card[data-animal="penguin"] .card-header { background: linear-gradient(135deg, #81ecec, #00cec9); }
+        .card[data-animal="elephant"] .card-header { background: linear-gradient(135deg, #dfe6e9, #b2bec3); }
+        .card[data-animal="lion"] .card-header { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+        .card[data-animal="owl"] .card-header { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .card[data-animal="dolphin"] .card-header { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+        .card[data-animal="koala"] .card-header { background: linear-gradient(135deg, #fab1a0, #e17055); }
+
+        .card-emoji {
+            font-size: 64px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            animation: bounce 2s infinite ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .card-name {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .card-name-en {
+            font-size: 13px;
+            color: rgba(255,255,255,0.85);
+            margin-top: 3px;
+            letter-spacing: 2px;
+        }
+
+        /* 内容区域 */
+        .card-body {
+            padding: 24px 26px 28px;
+        }
+
+        /* 模块标签 */
+        .section {
+            margin-bottom: 16px;
+        }
+        .section:last-child { margin-bottom: 0; }
+        .section-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 3px 12px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .section-label.look { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .section-label.habit { background: linear-gradient(135deg, #00b894, #55efc4); }
+        .section-label.fact { background: linear-gradient(135deg, #fdcb6e, #f39c12); }
+        .section-label.personality { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .section-label.home { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+
+        .section-text {
+            color: #444;
+            font-size: 15px;
+            line-height: 1.75;
+            padding-left: 4px;
+        }
+        .section-text strong { color: #2d3436; }
+
+        /* 翻页导航 */
+        .nav-area {
+            max-width: 400px;
+            margin: 25px auto 0;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        .nav-btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-btn.prev {
+            background: #dfe6e9;
+            color: #636e72;
+        }
+        .nav-btn.prev:hover { background: #b2bec3; }
+        .nav-btn.next {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .nav-btn.next:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* 返回按钮 */
+        .home-link {
+            display: block;
+            width: fit-content;
+            margin: 30px auto 0;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #52b788, #40916c);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(64,145,108,0.3);
+            transition: all 0.3s;
+        }
+        .home-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(64,145,108,0.4);
+        }
+
+        /* 进度点 */
+        .dots-area {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .dot.active { background: #52b788; transform: scale(1.3); }
+    </style>
+</head>
+<body>
+
+    <h1 class="page-title">🦁 动物知识卡片集</h1>
+    <p class="page-subtitle">第三周作品 · 创 & 卓 · 2026.04.19</p>
+
+    <!-- 本期目标 -->
+    <div class="goal-banner">
+        <span class="goal-icon">🎯</span>
+        <span class="goal-text">本期核心目标：培养批判性思维；学会使用 AI 查询信息，同时学会验证和筛选信息。</span>
+    </div>
+
+    <!-- 动物选择列表 -->
+    <ul class="animal-list" id="animalList"></ul>
+
+    <!-- 卡片展示区 -->
+    <div class="card-container" id="cardContainer"></div>
+
+    <!-- 翻页导航 -->
+    <div class="nav-area" id="navArea" style="display:none;">
+        <button class="nav-btn prev" id="prevBtn" onclick="prevCard()">◀ 上一张</button>
+        <button class="nav-btn next" id="nextBtn" onclick="nextCard()">下一张 ▶</button>
+    </div>
+
+    <div class="dots-area" id="dotsArea"></div>
+
+    <a href="../" class="home-link">← 返回首页</a>
+
+<script>
+// ========== 动物数据 ==========
+const animals = [
+{
+    name: "乌龟", emoji: "🐢", enName: "Turtle",
+    look: "背着一个坚硬的壳，像一座移动的小房子。壳上有美丽的花纹图案。四肢短短的、扁扁的，适合在水里划动。头可以缩进壳里保护自己。",
+    habit: "喜欢晒太阳！经常爬到石头上张开四肢享受阳光。行动很慢很慢，但游泳的时候可快了。冬天会冬眠，一睡就是好几个月。",
+    fact: "乌龟的年龄比人类还长！有的能活到150岁以上。它们出生时的性别居然是由温度决定的——蛋在温暖的地方孵出来是女生，冷一点的地方是男生。",
+    personality: "性格特别沉稳，不慌不忙，好像什么急事都不存在。遇到危险就躲进壳里装作不在，是个聪明的'忍者'。",
+    home: "生活在河流、湖泊、池塘或者海边沙滩。有些住在陆地上叫陆龟，有些住在水里叫水龟。"
+},
+{
+    name: "青蛙", emoji: "🐸", enName: "Frog",
+    look: "皮肤滑溜溜的，颜色有绿色也有棕色。两只大眼睛鼓鼓的，好像永远在惊讶地看着世界。后腿特别有力，一跳能跳很远！嘴巴宽宽的。",
+    habit: "白天躲在阴凉的地方休息，晚上最活跃，出来捉虫子吃。喜欢蹲在水边，发出呱呱的叫声。冬天也会冬眠，藏在泥土里睡觉。",
+    fact: "青蛙是用皮肤呼吸的一部分空气！所以它们必须保持皮肤湿润。还有哦，青蛙吃东西是整个吞下去的，从来不嚼——因为它们没有牙齿！",
+    personality: "活泼好动，跳来跳去停不下来。叫声很大，好像在开演唱会。胆子其实挺小的，稍微有点动静就扑通跳进水里。",
+    home: "稻田、池塘、小溪边、湿地。哪里有水、有虫子，哪里就有青蛙的家。"
+},
+{
+    name: "企鹅", emoji: "🐧", enName: "Penguin",
+    look: "穿着黑白相间的'西装'，站得直直的。翅膀不是用来飞的，而是当桨划水用。走路摇摇摆摆的，超级可爱！肚皮圆滚滚的。",
+    habit: "群居生活，成千上万只企鹅住在一起。爸爸企鹅会把蛋放在脚上，用肚子盖着保暖，一站就是好几个星期不吃东西！",
+    fact: "企鹅其实是鸟！只是它们的翅膀进化成了鳍状肢。它们能在水下憋气超过20分钟，游得比很多鱼还快。而且企鹅会'飞'——在水下飞！",
+    personality: "看起来笨笨的，但其实社交能力很强。对家庭非常负责，企鹅爸爸是动物界最好的爸爸之一。有点呆萌，又有点执着。",
+    home: "南半球寒冷的地方，比如南极洲、新西兰、南非海岸。"
+},
+{
+    name: "大象", emoji: "🐘", enName: "Elephant",
+    look: "地球上最大的陆地动物！长长的鼻子（象鼻）灵活得像一只手，可以卷起一根草，也可以拔起一棵树。大大的耳朵像两把扇子，四条腿像柱子一样粗壮。",
+    habit: "每天要吃150公斤的食物！大部分时间都在吃。喜欢用鼻子喷水和泥浆给自己洗澡降温。一群大象由最年长的雌性带领。",
+    fact: "大象的记忆力超级好，能记住几十年前见过的人和地方。它们会为去世的同伴'默哀'，还会用鼻子抚摸同伴的骨头表示怀念。象鼻里有4万块肌肉！",
+    personality: "温柔但强大，聪明又有感情。很照顾群体里的老弱病残。生气起来很可怕，但平时是个温和的大个子。",
+    home: "非洲草原、亚洲热带森林。非洲象耳朵更大，亚洲象耳朵较小。"
+},
+{
+    name: "狮子", emoji: "🦁", enName: "Lion",
+    look: "雄狮子有一圈威风凛凛的鬃毛，像戴了金色的皇冠。身体强壮，肌肉发达，爪子锋利无比。尾巴末端有一撮毛球，走起路来甩呀甩的。",
+    habit: "大部分时间都在睡觉——一天能睡20小时！狩猎通常在傍晚或清晨进行。雄狮主要负责保卫领地，雌狮才是捕猎的主力。",
+    fact: "狮子的吼声能传到8公里远！是所有猫科动物中唯一群居的。小时候的小狮子身上有斑点，像豹纹一样，长大了才消失。",
+    personality: "霸气外露的'草原之王'，但在家里是个懒虫。对家人很温柔，小狮子会在爸爸鬃毛里钻来钻去撒娇。",
+    home: "非洲撒哈拉以南的草原和稀树草原。以前亚洲也有，现在野外几乎没有了。"
+},
+{
+    name: "猫头鹰", emoji: "🦉", enName: "Owl",
+    look: "大大的圆眼睛，头能转270度！羽毛蓬松柔软，飞行时几乎没声音。嘴巴弯弯的像钩子，爪子尖锐有力。脸盘像个圆圆的盘子。",
+    habit: "夜行侠！晚上出来活动，白天在树上打瞌睡。头能转动看身后，不用转身就能发现猎物。飞行时悄无声息，猎物根本听不到。",
+    fact: "猫头鹰的眼睛不能转动——所以它才需要转脖子！它的左耳和右耳高度不一样，这样可以精确定位声音来源，就像自带雷达。",
+    personality: "神秘又安静，独来独往的高手。看起来严肃酷酷的，其实内心很专注。是森林里的智慧担当。",
+    home: "树林、山洞、废弃建筑。全世界除了南极洲以外都有猫头鹰。"
+}
+];
+
+let currentIndex = 0;
+
+// ========== 渲染 ==========
+function renderList() {
+    const ul = document.getElementById('animalList');
+    ul.innerHTML = '';
+    animals.forEach((a, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="emoji">${a.emoji}</span>${a.name}`;
+        li.className = i === currentIndex ? 'active' : '';
+        li.onclick = () => goTo(i);
+        ul.appendChild(li);
+    });
+}
+
+function renderDots() {
+    const area = document.getElementById('dotsArea');
+    area.innerHTML = '';
+    animals.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === currentIndex ? ' active' : '');
+        d.onclick = () => goTo(i);
+        area.appendChild(d);
+    });
+}
+
+function renderCard() {
+    const a = animals[currentIndex];
+    const container = document.getElementById('cardContainer');
+    container.innerHTML = `
+        <div class="card" data-animal="${['turtle','frog','penguin','elephant','lion','owl'][currentIndex]}">
+            <div class="card-header">
+                <div class="card-emoji">${a.emoji}</div>
+                <div class="card-name">${a.name}</div>
+                <div class="card-name-en">${a.enName.toUpperCase()}</div>
+            </div>
+            <div class="card-body">
+                <div class="section">
+                    <span class="section-label look">外形</span>
+                    <p class="section-text">${a.look}</p>
+                </div>
+                <div class="section">
+                    <span class="section-label habit">习性</span>
+                    <p class="section-text">${a.habit}</p>
+                </div>
+                <div class="section">
+                    <span class="section-label fact">趣味冷知识</span>
+                    <p class="section-text">${a.fact}</p>
+                </div>
+                <div class="section">
+                    <span class="section-label personality">性格</span>
+                    <p class="section-text">${a.personality}</p>
+                </div>
+                <div class="section">
+                    <span class="section-label home">居住地</span>
+                    <p class="section-text">${a.home}</p>
+                </div>
+            </div>
+        </div>`;
+    
+    // 更新列表高亮
+    document.querySelectorAll('.animal-list li').forEach((li, i) => {
+        li.classList.toggle('active', i === currentIndex);
+    });
+    // 更新点
+    document.querySelectorAll('.dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentIndex);
+    });
+    // 按钮
+    document.getElementById('prevBtn').disabled = (currentIndex === 0);
+    document.getElementById('nextBtn').disabled = (currentIndex === animals.length - 1);
+}
+
+function goTo(i) {
+    if (i >= 0 && i < animals.length) {
+        currentIndex = i;
+        renderCard();
+    }
+}
+function nextCard() { goTo(currentIndex + 1); }
+function prevCard() { goTo(currentIndex - 1); }
+
+// 键盘翻页
+document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight') nextCard();
+    if(e.key === 'ArrowLeft') prevCard();
+});
+
+// 初始化
+renderList();
+renderDots();
+renderCard();
+document.getElementById('navArea').style.display = 'flex';
+</script>
+
+</body>
+</html>
