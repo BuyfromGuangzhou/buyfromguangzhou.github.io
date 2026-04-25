@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>海海问答小机器人</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:linear-gradient(180deg,#0077b6,#00b4d8 30%,#90e0ef 60%,#caf0f8);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 15px 30px;overflow-x:hidden}
+.bk{position:fixed;border-radius:50%;background:rgba(255,255,255,.15);animation:br linear infinite;z-index:0;pointer-events:none}
+@keyframes br{0%{transform:translateY(0) scale(1);opacity:.6}50%{opacity:.3}100%{transform:translateY(-100vh) scale(.5);opacity:0}}
+.wd{position:fixed;bottom:0;left:0;right:0;height:70px;z-index:0;pointer-events:none;overflow:hidden}
+.wd svg{position:absolute;bottom:0;width:200%;height:70px}
+.w1{animation:wm 8s linear infinite}.w2{animation:wm 12s linear infinite reverse;opacity:.5}
+@keyframes wm{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ct{width:100%;max-width:480px;z-index:1;position:relative}
+.hd{text-align:center;margin-bottom:18px}
+.av{width:85px;height:85px;margin:0 auto 10px;animation:fl 3s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.av div{width:85px;height:85px;border-radius:50%;background:linear-gradient(135deg,#0077b6,#00b4d8);display:flex;align-items:center;justify-content:center;font-size:44px;box-shadow:0 8px 25px rgba(0,119,182,.4);border:4px solid white}
+.hd h1{font-size:26px;color:white;text-shadow:0 2px 8px rgba(0,0,0,.2)}
+.hd p{font-size:13px;color:rgba(255,255,255,.85);margin-top:3px}
+.box{background:rgba(255,255,255,.95);border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;height:55vh;min-height:340px}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.msgs::-webkit-scrollbar{width:4px}.msgs::-webkit-scrollbar-thumb{background:#caf0f8;border-radius:4px}
+.msg{display:flex;gap:8px;max-width:88%;animation:mi .3s ease-out}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.bot{align-self:flex-start}.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg .icon{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.msg.bot .icon{background:linear-gradient(135deg,#0077b6,#00b4d8)}
+.msg.user .icon{background:linear-gradient(135deg,#f093fb,#f5576c)}
+.msg .bbl{padding:11px 15px;border-radius:16px;font-size:14.5px;line-height:1.6;word-break:break-word}
+.msg.bot .bbl{background:#f0f8ff;color:#333;border-bottom-left-radius:4px}
+.msg.user .bbl{background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border-bottom-right-radius:4px}
+.inp{display:flex;gap:8px;padding:12px 14px;background:#f8fbff;border-top:1px solid #e8f4f8}
+.inp input{flex:1;border:2px solid #caf0f8;border-radius:22px;padding:9px 16px;font-size:15px;outline:none;font-family:inherit;background:white}
+.inp input:focus{border-color:#00b4d8}
+.inp input::placeholder{color:#aaa}
+.inp button{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;font-size:18px;cursor:pointer;transition:transform .2s;box-shadow:0 3px 12px rgba(0,119,182,.3)}
+.inp button:hover{transform:scale(1.08)}.inp button:active{transform:scale(.95)}
+.qs{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;justify-content:center}
+.qs button{background:rgba(255,255,255,.9);border:2px solid #90e0ef;border-radius:18px;padding:7px 14px;font-size:13px;cursor:pointer;color:#0077b6;transition:all .2s;font-family:inherit}
+.qs button:hover{background:#0077b6;color:white;border-color:#0077b6;transform:translateY(-2px)}
+.dots{display:inline-flex;gap:4px;padding:3px 0}
+.dots span{width:7px;height:7px;border-radius:50%;background:#90e0ef;animation:db 1.2s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes db{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.bk2{text-align:center;margin-top:16px}
+.bk2 a{display:inline-flex;align-items:center;gap:6px;background:white;color:#0077b6;text-decoration:none;padding:11px 26px;border-radius:28px;font-size:14px;font-weight:bold;box-shadow:0 4px 16px rgba(0,0,0,.12);border:2px solid #0077b6;transition:all .3s}
+.bk2 a:hover{background:#0077b6;color:white}
+@media(max-width:500px){.box{height:60vh;min-height:280px}.hd h1{font-size:22px}.msg .bbl{font-size:13.5px}}
+</style>
+</head>
+<body>
+<div class="bk" style="width:18px;height:18px;left:8%;bottom:18%;animation-duration:7s"></div>
+<div class="bk" style="width:12px;height:12px;left:22%;bottom:8%;animation-duration:9s;animation-delay:2s"></div>
+<div class="bk" style="width:16px;height:16px;left:68%;bottom:12%;animation-duration:8s;animation-delay:1s"></div>
+<div class="bk" style="width:10px;height:10px;left:82%;bottom:22%;animation-duration:11s;animation-delay:3s"></div>
+<div class="bk" style="width:14px;height:14px;left:48%;bottom:4%;animation-duration:10s;animation-delay:.5s"></div>
+<div class="wd">
+<svg class="w1" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0,35 C360,70 720,0 1080,35 C1260,50 1380,15 1440,35 L1440,70 L0,70Z" fill="rgba(255,255,255,.15)"/></svg>
+<svg class="w2" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0,45 C240,10 480,60 720,25 C960,0 1200,50 1440,25 L1440,70 L0,70Z" fill="rgba(255,255,255,.1)"/></svg>
+</div>
+<div class="ct">
+<div class="hd">
+<div class="av"><div>🌊</div></div>
+<h1>海海</h1>
+<p>海洋知识小专家 · 问啥都行（只要是海洋的！）</p>
+</div>
+<div class="box">
+<div class="msgs" id="chat"></div>
+<div class="inp">
+<input type="text" id="inp" placeholder="问我关于海洋的问题吧..." maxlength="200"/>
+<button id="btn">&#10148;</button>
+</div>
+</div>
+<div class="qs">
+<button data-q="鲸鱼有多大？">🐋 鲸鱼有多大</button>
+<button data-q="珊瑚礁是什么？">🪸 珊瑚礁</button>
+<button data-q="为什么海水是咸的？">🧂 海水为什么咸</button>
+<button data-q="海豚聪明吗？">🐬 海豚聪明吗</button>
+<button data-q="最深的海沟有多深？">🌊 最深的海沟</button>
+<button data-q="水母会发光吗？">💡 水母发光</button>
+</div>
+<div class="bk2"><a href="../">&#8592; 返回首页</a></div>
+</div>
+<script>
+var QA=[
+{k:['鲸鱼','蓝鲸','鲸'],a:'哇！鲸鱼超厉害的！蓝鲸是地球上最大的动物，比恐龙还大！一头蓝鲸可以长到30米，差不多3辆公交车那么长！它的心脏有一辆小汽车那么大，舌头和大象一样重呢！你知道吗？蓝鲸的叫声可以传到1600公里以外！'},
+{k:['海豚'],a:'海豚可聪明啦！它们的大脑和人类差不多大，而且会照镜子认出自己哦！海豚睡觉的时候只闭一只眼睛，因为一半大脑要醒着呼吸！你知道吗？海豚还会给彼此起名字呢！超可爱的！'},
+{k:['鲨鱼','大白鲨'],a:'鲨鱼可是海洋里的超级猎手！大白鲨可以长到6米长，一辈子能换2万多颗牙！不过你知道吗？鲨鱼其实很怕虎鲸，遇到虎鲸会赶紧跑开！鲨鱼翻过来肚子朝上就会进入发呆状态，叫"强直静止"！'},
+{k:['水母','海蜇'],a:'水母超酷的！它们没有大脑、没有心脏、没有骨头，身体95%都是水！但它们已经在地球上活了5亿多年，比恐龙还早呢！有些水母会发光，在漆黑的深海里像小灯笼一样！你知道吗？有一种"永生水母"可以变回小时候重新长大！'},
+{k:['章鱼','八爪鱼'],a:'章鱼简直是海洋里的天才！它有3个心脏、9个大脑、蓝色的血液！章鱼可以瞬间变色来伪装自己，还能挤过比它眼睛还小的洞！你知道吗？章鱼会打开罐子、走迷宫、还会用椰子壳当房子！'},
+{k:['海龟','龟'],a:'海龟是海洋里的老旅行家啦！它们已经在地球上活了1.1亿年，和恐龙同时代呢！你知道吗？海龟妈妈会跨越几千公里回到自己出生的沙滩产卵，导航能力超强的！'},
+{k:['海马'],a:'海马可特别啦！你知道吗？海马是爸爸生宝宝的！海马妈妈把卵放到海马爸爸的育儿袋里，然后爸爸负责孵化，一次能生几百只小海马呢！'},
+{k:['企鹅'],a:'企鹅虽然是鸟但不会飞！不过它们是游泳高手，帝企鹅可以潜到500多米深的水下！你知道吗？帝企鹅爸爸会在零下60度的暴风雪里孵蛋，两个月不吃不喝，超伟大的！'},
+{k:['海星'],a:'海星超神奇的！你知道吗？海星没有大脑也没有血液，用海水代替血液在身体里流动！最厉害的是，海星可以把胃翻出来体外消化食物！而且断掉的触手还能重新长出来！'},
+{k:['小丑鱼','尼莫'],a:'小丑鱼就是《海底总动员》里的尼莫！它们住在海葵里面，海葵的毒刺伤不了小丑鱼！你知道吗？所有小丑鱼生下来都是雄的！一群里最大的那只后来会变成雌鱼，超神奇吧！'},
+{k:['海豹','海狮'],a:'海豹和海狮是海洋里的"萌物"！你知道吗？海豹能在水下憋气长达2个小时！它们的胡须能感知鱼游动产生的水流，就算在漆黑的水里也能精准捕猎！'},
+{k:['虎鲸','杀人鲸'],a:'虎鲸是海洋里真正的霸主！它们其实不是鲸，是海豚家族里最大的成员！虎鲸非常聪明，会团队合作捕猎！你知道吗？虎鲸还会故意让自己搁浅来抓岸边的海豹！'},
+{k:['乌贼','鱿鱼','墨鱼'],a:'乌贼是海洋里的喷射战斗机！它们靠喷水来推进，遇到危险就喷墨汁逃跑。大王乌贼可以长到13米！你知道吗？大王乌贼的眼睛有篮球那么大！'},
+{k:['海胆'],a:'海胆看起来像个刺球，但它其实是海星的远亲哦！你知道吗？海胆的嘴巴叫"亚里士多德灯笼"，由5颗牙齿组成，连石头都能啃！'},
+{k:['蝠鲼','魔鬼鱼'],a:'蝠鲼就是"魔鬼鱼"！它的翅膀展开可以宽达7米，在海里飞起来就像一只巨大的鸟！你知道吗？蝠鲼是鱼类里大脑最大的！'},
+{k:['海葵'],a:'海葵看起来像花，但其实是动物哦！你知道吗？海葵和小丑鱼是最好的搭档，小丑鱼帮海葵引来猎物，海葵保护小丑鱼不被大鱼吃！'},
+{k:['海兔','海蛞蝓'],a:'海兔是海洋里最漂亮的小动物之一！五颜六色的，像小宝石一样！你知道吗？有些海兔可以"偷"水母的毒刺来保护自己！还有一种海兔吃了一次藻类后就能光合作用了！'},
+{k:['海藻','藻','海带','紫菜','海草'],a:'海藻和海草是海洋里的大功臣！你知道吗？地球上超过50%的氧气都是海洋里的藻类产生的！海带可以长到60米长！我们吃的紫菜、海带都是海藻！'},
+{k:['红树林'],a:'红树林是长在海边的一群树，它们的根泡在咸咸的海水里也能活！红树林是海洋的"保护神"——它的根像网一样抓住泥沙，能挡住台风和海啸！'},
+{k:['海沟','马里亚纳','最深'],a:'马里亚纳海沟是地球上最深的地方！深达10994米！如果把珠峰放进去，山顶上面还有2公里深的水呢！你知道吗？在那么深的地方，水压大到相当于你的指甲盖上站了一头大象！但居然还有生物在那里活着！'},
+{k:['太平洋','最大的洋'],a:'太平洋是地球上最大最深的海洋！面积有1.65亿平方公里，比所有陆地加起来还大！你知道吗？太平洋里有大约25000个岛屿！'},
+{k:['大西洋'],a:'大西洋是第二大海洋！你知道吗？大西洋还在变宽呢！每年变宽约2.5厘米，因为中间的大西洋中脊在不断喷出岩浆，把两边的大陆推开！'},
+{k:['北冰洋','冰洋','北极'],a:'北冰洋是最小最冷的海洋！冬天大部分海面都冻住了！你知道吗？北极熊其实是在北冰洋的浮冰上捕猎海豹的！不过因为全球变暖，北冰洋的冰越来越少了！'},
+{k:['洋流','暖流','寒流','湾流'],a:'洋流就像海洋里的河流！暖流把热水从赤道送过来，寒流把冷水从极地送回来。你知道吗？墨西哥湾流一天流的水比全世界所有河流一天流的水还多！'},
+{k:['海底火山','热泉','黑烟囱'],a:'海底有超多火山！全球80%的火山活动都在海底！深海热泉水温高达400度，但因为水压太大不会沸腾！你知道吗？热泉周围住着很多奇怪的生物，不需要阳光就能活着！'},
+{k:['海浪','浪','波浪'],a:'海浪是风吹出来的！风越大，浪越高！你知道吗？有记录以来最高的海浪有30多米，差不多10层楼那么高！叫"疯狗浪"！海浪其实不是水在往前跑，而是能量的传递！'},
+{k:['潮汐','涨潮','退潮'],a:'潮汐是月球和太阳的引力拉出来的！月球离我们近，拉力最大，所以潮汐主要跟着月亮走！一天涨潮退潮各两次。你知道吗？有些地方涨潮退潮的水位差有16米，差不多5层楼高！'},
+{k:['海啸'],a:'海啸和普通海浪完全不一样！普通浪是风吹的，海啸是海底地震或火山喷发造成的！你知道吗？海啸的速度可以达到每小时800公里，和飞机一样快！'},
+{k:['珊瑚','珊瑚礁','礁','大堡礁'],a:'珊瑚礁是海洋里的"热带雨林"！虽然只占海底面积的0.1%，但25%的海洋生物都住在里面！珊瑚其实不是石头，是无数小珊瑚虫的骨骼堆起来的！大堡礁从太空都能看到！'},
+{k:['白化','珊瑚白化'],a:'珊瑚白化就是珊瑚把体内的虫黄藻赶走了，失去了颜色变成白色！如果海水温度太高就会白化。你知道吗？如果环境恢复，珊瑚还能慢慢恢复颜色！'},
+{k:['咸','盐','海水为什么咸'],a:'海水之所以咸，是因为里面溶解了超多矿物质！主要是氯化钠，就是我们吃的盐！你知道吗？如果把海水里的盐全提取出来，可以在陆地上铺153米厚！'},
+{k:['蓝色','海水为什么蓝','海为什么蓝'],a:'海水看起来是蓝色的，是因为太阳光！海水很容易吸收红色和黄色的光，蓝色的光被反射回来！你知道吗？在浅水区，海看起来是绿色或青色的！'},
+{k:['死海'],a:'死海其实不是海，是个大湖！它含盐量是普通海水的10倍，所以人可以轻松浮在水面上看报纸！你知道吗？死海是地球上海拔最低的地方，水面比海平面低430米！'},
+{k:['深海','深海生物','深海鱼'],a:'深海是地球上最神秘的地方！200米以下阳光就照不到了，一片漆黑。但深海里住着超多奇怪的生物！你知道吗？人类对深海的了解还不到5%！'},
+{k:['发光','生物发光','荧光'],a:'海洋里会发光的生物超多！约76%的深海生物都会发光！你知道吗？深海琵琶鱼头顶有个发光的"钓鱼竿"来引诱猎物！'},
+{k:['南极','南冰洋'],a:'南冰洋环绕着南极洲，是第五大洋！你知道吗？南冰洋里的磷虾数量惊人，有5亿吨！南极的冰如果全融化，海平面会上升60米！'},
+{k:['冰山','冰川'],a:'冰山是从冰川上断裂下来漂在海里的大冰块！冰山露出水面的只有10%，90%藏在水面以下！你知道吗？最大的冰山叫B-15，面积比整个北京市还大！'},
+{k:['污染','塑料','垃圾','环保'],a:'海洋污染是个大问题！每年有800万吨塑料垃圾流入海洋！你知道吗？太平洋上有个"大太平洋垃圾带"，面积是法国的3倍！我们一定要减少使用一次性塑料！'},
+{k:['全球变暖','变暖','气候'],a:'全球变暖对海洋影响太大了！海水温度升高导致珊瑚白化，极地冰融化让海平面上升。你知道吗？海洋吸收了人类排放的30%的二氧化碳！'},
+{k:['过度捕捞','捕鱼'],a:'过度捕捞就是抓鱼太快，鱼来不及繁殖！现在全球三分之一的鱼群都被过度捕捞了！你知道吗？如果继续这样，到2048年我们可能吃不到野生海鲜了！'},
+{k:['潜水','潜水器','蛟龙号'],a:'人类潜水最深记录是10916米！中国的"蛟龙号"能潜到7000米，"奋斗者号"更是潜到了10909米！你知道吗？人类登月的人数比潜入最深海底的还多！'},
+{k:['泰坦尼克','沉船'],a:'泰坦尼克号1912年撞上冰山沉没，在3800米深的海底沉睡了73年才被发现！你知道吗？船上的细菌正在"吃掉"这艘船，估计到2030年就会完全消失！'},
+{k:['鱼','鱼鳃','鳃'],a:'鱼是用鳃呼吸的！水从嘴巴进去，从鳃盖流出来，鳃丝上的毛细血管可以从水中吸取氧气。你知道吗？有些鱼还会用皮肤呼吸呢！'},
+{k:['贝壳','海螺'],a:'贝壳是软体动物的家！它们用碳酸钙一层一层地建造自己的房子。你知道吗？贝壳上的纹路就像树木的年轮！最大的贝壳是砗磲，可以长到1.4米宽！'},
+{k:['抹香鲸','龙涎香'],a:'抹香鲸可以潜到2000多米深！你知道吗？抹香鲸吃巨型乌贼，消化不了的喙在肠道里形成龙涎香！龙涎香是制作高级香水的原料，比黄金还贵！'},
+{k:['海獭'],a:'海獭是海洋里最可爱的动物之一！它们会仰面躺在水面上，把贝壳放在肚子上用石头砸开吃！你知道吗？海獭还会手拉着手睡觉，防止被水流冲散！'},
+{k:['鲸鲨'],a:'鲸鲨是海洋里最大的鱼！可以长到18米，和公交车一样长！但别担心，鲸鲨只吃浮游生物，非常温和。你知道吗？每条鲸鲨身上的斑点都是独一无二的，就像指纹！'},
+{k:['鮟鱇鱼','琵琶鱼'],a:'鮟鱇鱼头顶有个发光的"钓鱼竿"，用来引诱小鱼靠近然后一口吞掉！你知道吗？雄鮟鱇鱼会咬住雌鱼，然后慢慢和雌鱼融合在一起！'},
+{k:['海象'],a:'海象有两根长长的獠牙！海象用獠牙在海底挖蛤蜊，也用来攀爬冰面。你知道吗？海象的獠牙可以长到1米长！'},
+{k:['扇贝'],a:'扇贝有200只小眼睛！它们长在贝壳边缘，像一串蓝色的小珠子！你知道吗？扇贝游泳的时候像扇子一样一开一合，可以飞快地逃跑！'},
+{k:['河豚'],a:'河豚有毒，但日本人超爱吃！你知道吗？河豚受到威胁时会把自己吹成一个气球，身上的刺会竖起来！'},
+{k:['飞鱼'],a:'飞鱼可以"飞"出水面滑翔！它们用胸鳍像翅膀一样，最远可以飞400多米！你知道吗？飞鱼飞起来是为了躲避大鱼的追捕！'},
+{k:['磷虾'],a:'磷虾是海洋里最重要的"小不点"！只有手指那么大，但南冰洋里有5亿吨！鲸鱼、海豹、企鹅都靠吃磷虾活着。你知道吗？磷虾会发光，在夜里像一片蓝色的星空！'},
+{k:['独角鲸'],a:'独角鲸的"角"其实是左上颚的一颗牙齿，可以长到3米长！你知道吗？独角鲸的牙齿里面有1000万条神经，可以感知水温、盐度和压力！'},
+{k:['水滴鱼'],a:'水滴鱼被评为"世界上最丑的动物"！但其实它在深海里挺正常的，被拉出水面后因为压力变化才变得像一团融化的蜡！'},
+{k:['蓝环章鱼'],a:'蓝环章鱼只有高尔夫球那么大，但它是海洋里最毒的动物之一！受到威胁时身上的圆环会变成亮蓝色！你知道吗？一只蓝环章鱼的毒液可以杀死26个成年人！'},
+{k:['鹦鹉螺'],a:'鹦鹉螺是海洋里的"活化石"，已经活了5亿年！它的壳是一个完美的对数螺旋。你知道吗？鹦鹉螺可以控制自己的浮力，像潜水艇一样在深海和浅海之间上下移动！'},
+{k:['鲎','马蹄蟹'],a:'鲎已经活了4.5亿年，比恐龙还早！它们的血液是蓝色的，因为含有铜！你知道吗？鲎的血液可以检测细菌，一升鲎血价值15000美元！'},
+{k:['海天使'],a:'海天使是海洋里最美丽的生物之一！它们像透明的小天使在水中游动。你知道吗？海天使其实是海蛞蝓的一种，它们还会把猎物的刺细胞偷来保护自己！'},
+{k:['海绵'],a:'海绵是最简单的多细胞动物！它们没有器官、没有神经系统，身体就像一个过滤器。你知道吗？海绵已经在地球上活了6亿年！有些海绵可以活2000多年！'},
+{k:['牡蛎','生蚝'],a:'牡蛎被称为"海洋牛奶"！一只牡蛎一天可以过滤200升海水！你知道吗？牡蛎还会根据环境改变性别，有时候是公的，有时候是母的！'},
+{k:['座头鲸'],a:'座头鲸是海洋里的"歌唱家"！它们的歌声可以持续几小时，而且每年都在变！你知道吗？座头鲸还会用"气泡网"捕鱼——围成一圈吐泡泡把鱼群赶到中间！'},
+{k:['旗鱼','剑鱼'],a:'旗鱼是海洋里游得最快的鱼！最高速度可以达到每小时110公里，比高速公路上的汽车还快！它们的嘴可以刺穿小船的木板！'},
+{k:['翻车鱼'],a:'翻车鱼是世界上最大的硬骨鱼！可以长到3吨重，但身体扁平得像被压扁了一样。你知道吗？翻车鱼一次可以产3亿颗卵！'},
+{k:['漩涡'],a:'海洋漩涡是水流旋转形成的大圆圈！最大的漩涡直径有几百公里！你知道吗？日本附近的鸣门漩涡超有名，转起来直径有20米！'},
+{k:['赤潮'],a:'赤潮是浮游植物大量繁殖让海水变色的现象！有些赤潮会产生毒素，让鱼虾中毒死亡。你知道吗？赤潮越来越多和海水污染有关！'},
+{k:['潮池','潮间带'],a:'潮池是退潮后留在岩石坑里的海水，里面是个小世界！你能找到海星、海胆、小螃蟹、海葵！你知道吗？潮池里的生物每天都要经历涨潮被海浪拍、退潮被太阳晒的考验！'},
+{k:['浮游植物','浮游'],a:'浮游植物超级小，肉眼看不见，但它们可重要了！是海洋食物链的最底层！你知道吗？浮游植物产生了地球上一半以上的氧气，比所有森林加起来还多！'},
+{k:['海底'],a:'海底的地形比陆地还丰富！有高山、有峡谷、有平原、有火山。你知道吗？海底最长的山脉是中大洋海岭，全长65000公里，比陆地上所有山脉加起来还长！'},
+{k:['海洋','海','大洋'],a:'海洋覆盖了地球71%的面积！太平洋最大，北冰洋最小。你知道吗？人类对海洋的探索还不到20%，超过80%的海洋还是未知的！海洋平均深度3688米，藏着无数秘密！'},
+{k:['格陵兰鲨'],a:'格陵兰鲨是海洋里最长寿的脊椎动物！可以活到400岁以上！你知道吗？它们一年只长1厘米，要到150岁才成年！'},
+{k:['箱水母'],a:'箱水母是海洋里最毒的动物！一只的毒液可以杀死60个人！它们有24只眼睛，可以看到颜色和形状！你知道吗？箱水母游得比奥运游泳冠军还快！'},
+{k:['比目鱼'],a:'比目鱼超有趣的！小时候两只眼睛一边一个，但长大后一只眼睛会慢慢移到另一侧，最后两只眼睛都在同一侧了！你知道吗？比目鱼还是伪装大师！'},
+{k:['印度洋'],a:'印度洋是第三大洋，也是最温暖的海洋！你知道吗？印度洋里有世界上最美的海岛，像马尔代夫、塞舌尔，水清沙白，像天堂一样！'},
+{k:['大陆架','浅海'],a:'大陆架就是陆地延伸到海里的浅水区，一般深不到200米。虽然只占海洋面积的8%，但90%的鱼都住在这里！'},
+{k:['藤壶'],a:'藤壶看起来像贝壳，但其实是甲壳类动物，和螃蟹是亲戚！它们找到合适的地方就一辈子粘在上面不动了。你知道吗？鲸鱼身上也会长藤壶！'},
+{k:['电鳗','电鳐'],a:'电鳗和电鳐可以自己发电！电鳗一次放电可以达到600伏，足够把人电晕！你知道吗？电鳗其实不是鳗鱼，而是鲶鱼的亲戚！'},
+{k:['海蛇'],a:'海蛇的毒液比陆地眼镜蛇还厉害，但它们性格很温顺，很少攻击人！你知道吗？海蛇可以在水下憋气长达8个小时！'},
+{k:['儒艮','美人鱼','海牛'],a:'美人鱼的原型其实是儒艮！它们用前肢抱着小儒艮喂奶，远远看去像女人抱着婴儿。你知道吗？儒艮一天能吃40公斤海草，是唯一纯素食的海洋哺乳动物！'},
+{k:['石头鱼'],a:'石头鱼是伪装大师！它长得和海底石头一模一样，但背上有13根毒刺！你知道吗？石头鱼是海洋里毒性最强的鱼之一！'},
+{k:['花园鳗'],a:'花园鳗超可爱！它们半身埋在沙子里，只露出上半身，一群在一起像海底的花园！你知道吗？花园鳗很胆小，一有动静就会嗖地缩回沙子里！'},
+{k:['巨藻林','海藻林'],a:'巨藻林是海洋里的"森林"！巨藻可以一天长60厘米，一年能长到60米高！你知道吗？巨藻林被称为"海洋热带雨林"！'},
+{k:['黑烟囱'],a:'深海黑烟囱是海底热泉喷出的矿物质形成的烟囱状结构，水温高达400度！你知道吗？黑烟囱周围生活着不需要阳光的生物，科学家认为生命可能就是从黑烟囱开始的！'}
+];
+
+var chat=document.getElementById('chat');
+var inp=document.getElementById('inp');
+var btn=document.getElementById('btn');
+
+function addMsg(type,text){
+  var d=document.createElement('div');
+  d.className='msg '+type;
+  d.innerHTML='<div class="icon">'+(type==='bot'?'🌊':'😊')+'</div><div class="bbl">'+text+'</div>';
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+function showTyping(){
+  var d=document.createElement('div');
+  d.className='msg bot';d.id='typing';
+  d.innerHTML='<div class="icon">🌊</div><div class="bbl"><div class="dots"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;
+}
+
+function removeTyping(){
+  var t=document.getElementById('typing');
+  if(t)t.remove();
+}
+
+function isOcean(q){
+  var ql=q.toLowerCase();
+  for(var i=0;i<QA.length;i++){
+    for(var j=0;j<QA[i].k.length;j++){
+      if(ql.indexOf(QA[i].k[j])>=0)return true;
+    }
+  }
+  var oceanWords=['海','洋','鱼','鲸','鲨','豚','龟','蟹','虾','贝','螺','藻','浪','潮','礁','盐','冰','湾','岛','滩','湖','川','水','鳗','鳍','鳃','鳞','潜','船','浮','深','岸','港','钓','捕','航','帆','锚','桨','舟','艇','港','渡','泳','潜','冲','滩','沙','潮','咸','氧','珊瑚','海带','深渊','渔','海底','海水','海洋','洋流','深海','浮冰','冰山','极地','赤道','热带','温带','寒带','北冰','南冰','大西','太平','印度'];
+  for(var w=0;w<oceanWords.length;w++){
+    if(ql.indexOf(oceanWords[w])>=0)return true;
+  }
+  return false;
+}
+
+function findAnswer(q){
+  var ql=q.toLowerCase();
+  var best=null;var bestLen=999;
+  for(var i=0;i<QA.length;i++){
+    for(var j=0;j<QA[i].k.length;j++){
+      if(ql.indexOf(QA[i].k[j])>=0&&QA[i].k[j].length<bestLen){
+        best=QA[i];bestLen=QA[i].k[j].length;
+      }
+    }
+  }
+  if(best)return best.a;
+  for(var i=0;i<QA.length;i++){
+    for(var j=0;j<QA[i].k.length;j++){
+      if(QA[i].k[j].indexOf(ql)>=0)return QA[i].a;
+    }
+  }
+  return null;
+}
+
+function reply(q){
+  addMsg('user',q);
+  showTyping();
+  var delay=600+Math.random()*800;
+  setTimeout(function(){
+    removeTyping();
+    if(!isOcean(q)){
+      var nos=['这个问题我还在学习中，问点别的吧！','这个问题我还在学习中，问点别的吧！','这个问题我还在学习中，问点别的吧！'];
+      addMsg('bot',nos[Math.floor(Math.random()*nos.length)]);
+      return;
+    }
+    var ans=findAnswer(q);
+    if(ans){
+      addMsg('bot',ans);
+    }else{
+      addMsg('bot','这个问题我还在学习中，问点别的吧！');
+    }
+  },delay);
+}
+
+btn.onclick=function(){
+  var v=inp.value.trim();
+  if(!v)return;
+  inp.value='';reply(v);
+};
+inp.onkeydown=function(e){
+  if(e.key==='Enter'){
+    var v=inp.value.trim();
+    if(!v)return;
+    inp.value='';reply(v);
+  }
+};
+document.querySelectorAll('.qs button').forEach(function(b){
+  b.onclick=function(){reply(this.getAttribute('data-q'));};
+});
+
+// 开场白
+setTimeout(function(){
+  addMsg('bot','你好呀！我是海海🌊 专门研究海洋的小专家！快来问我关于海洋的问题吧！');
+},500);
+</script>
+</body>
+</html>
