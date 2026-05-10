@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卓和创班级小报</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', cursive, sans-serif;
+            background: #fff5f5;
+            padding: 20px;
+        }
+
+        .newspaper {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            border: 4px solid transparent;
+            border-image: linear-gradient(135deg, #ff6b6b, #ffa502, #ffd43b, #51cf66, #339af0, #845ef7) 1;
+        }
+
+        /* ===== 顶部标题栏 ===== */
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ffa502, #ffd43b, #51cf66, #339af0, #845ef7);
+            padding: 28px 20px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+            animation: sparkle 4s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(5%, 5%); }
+        }
+
+        .header-emojis {
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2), 0 0 20px rgba(255,255,255,0.3);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 4px;
+        }
+
+        .header-date {
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 内容区 ===== */
+        .content {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ===== 通用版块样式 ===== */
+        .section {
+            border-radius: 18px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== 版块1：班级荣誉 ===== */
+        .honor-section {
+            background: linear-gradient(135deg, #fff3e0, #fff8e1);
+            border: 3px dashed #ffa502;
+            grid-column: 1 / -1;
+        }
+
+        .honor-section .section-title {
+            color: #e67700;
+            font-size: 24px;
+            justify-content: center;
+        }
+
+        .honor-banner {
+            background: linear-gradient(135deg, #ffa502, #ffd43b);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(255,165,2,0.3);
+        }
+
+        .honor-banner .big-number {
+            font-size: 64px;
+            font-weight: 900;
+            text-shadow: 2px 3px 0 rgba(0,0,0,0.1);
+            line-height: 1;
+        }
+
+        .honor-banner .big-text {
+            font-size: 20px;
+            margin-top: 4px;
+        }
+
+        .honor-banner .sub-text {
+            font-size: 15px;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
+        .honor-celebrate {
+            font-size: 32px;
+            text-align: center;
+            margin-top: 12px;
+            letter-spacing: 6px;
+            animation: bounce 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-6px); }
+        }
+
+        .honor-cups {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 28px;
+        }
+
+        .honor-cups span {
+            animation: wiggle 2s ease-in-out infinite;
+        }
+        .honor-cups span:nth-child(2) { animation-delay: 0.2s; }
+        .honor-cups span:nth-child(3) { animation-delay: 0.4s; }
+        .honor-cups span:nth-child(4) { animation-delay: 0.6s; }
+        .honor-cups span:nth-child(5) { animation-delay: 0.8s; }
+        .honor-cups span:nth-child(6) { animation-delay: 1.0s; }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* ===== 版块2：班级之星 ===== */
+        .stars-section {
+            background: linear-gradient(135deg, #f3f0ff, #e8e1ff);
+            border: 3px solid #845ef7;
+        }
+
+        .stars-section .section-title {
+            color: #7048e8;
+        }
+
+        .star-card {
+            background: white;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(132,94,247,0.12);
+            border-left: 5px solid;
+        }
+
+        .star-card.study { border-left-color: #339af0; }
+        .star-card.labor { border-left-color: #51cf66; }
+        .star-card.civilized { border-left-color: #ffa502; }
+
+        .star-icon {
+            font-size: 32px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .star-info {
+            flex: 1;
+        }
+
+        .star-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        .star-label.study-label { color: #339af0; }
+        .star-label.labor-label { color: #51cf66; }
+        .star-label.civilized-label { color: #ffa502; }
+
+        .star-name {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .star-encourage {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        /* ===== 版块3：温馨提示 ===== */
+        .tips-section {
+            background: linear-gradient(135deg, #e3fafc, #c5f6fa);
+            border: 3px solid #339af0;
+        }
+
+        .tips-section .section-title {
+            color: #1971c2;
+        }
+
+        .tip-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(51,154,240,0.1);
+        }
+
+        .tip-emoji {
+            font-size: 26px;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .tip-text {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .tip-text strong {
+            color: #1971c2;
+        }
+
+        /* ===== 版块4：趣味角 ===== */
+        .fun-section {
+            background: linear-gradient(135deg, #fff0f6, #f8d7e8);
+            border: 3px solid #f06595;
+        }
+
+        .fun-section .section-title {
+            color: #c2255c;
+        }
+
+        .joke-box {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(240,101,149,0.12);
+        }
+
+        .joke-q {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .joke-divider {
+            font-size: 12px;
+            color: #f06595;
+            margin-bottom: 10px;
+        }
+
+        .joke-a {
+            font-size: 14px;
+            color: #c2255c;
+            font-weight: bold;
+        }
+
+        .joke-reaction {
+            font-size: 28px;
+            margin-top: 12px;
+            animation: laugh 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes laugh {
+            from { transform: scale(1) rotate(-3deg); }
+            to { transform: scale(1.1) rotate(3deg); }
+        }
+
+        /* ===== 下期预告 ===== */
+        .preview-section {
+            background: linear-gradient(135deg, #f3f9ff, #dbeaff);
+            border: 3px dashed #339af0;
+        }
+
+        .preview-section .section-title {
+            color: #1971c2;
+        }
+
+        .preview-box {
+            text-align: center;
+            padding: 16px;
+        }
+
+        .preview-emoji {
+            font-size: 40px;
+            margin-bottom: 8px;
+            animation: float 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes float {
+            from { transform: translateY(0); }
+            to { transform: translateY(-8px); }
+        }
+
+        .preview-text {
+            font-size: 20px;
+            color: #1971c2;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .preview-sub {
+            font-size: 14px;
+            color: #74b9ff;
+            line-height: 1.8;
+        }
+
+        /* ===== 底部 ===== */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            color: #bbb;
+            font-size: 13px;
+            background: #fafafa;
+        }
+
+        .footer-deco {
+            font-size: 18px;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* ===== 打印适配 ===== */
+        @media print {
+            body { padding: 0; background: white; }
+            .newspaper { box-shadow: none; border-radius: 0; border: 2px solid #ddd; }
+        }
+
+        /* ===== 手机适配 ===== */
+        @media (max-width: 600px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+            .honor-section { grid-column: auto; }
+            .header h1 { font-size: 26px; }
+            .honor-banner .big-number { font-size: 48px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="newspaper">
+
+    <!-- 标题栏 -->
+    <div class="header">
+        <div class="header-emojis">🌈 🌟 🎉 ✨ 🌈</div>
+        <h1>卓和创班级小报</h1>
+        <div class="header-date">2026年5月 第1期</div>
+    </div>
+
+    <div class="content">
+
+        <!-- 版块1：班级荣誉 -->
+        <div class="section honor-section">
+            <div class="section-title">🏆 班级荣誉 🏆</div>
+            <div class="honor-banner">
+                <div class="big-number">6</div>
+                <div class="big-text">连冠！文明班！</div>
+                <div class="sub-text">我们班太厉害了，连续6次获得文明班称号！</div>
+            </div>
+            <div class="honor-celebrate">🎊 好棒呀！ 🎊 好棒呀！ 🎊</div>
+            <div class="honor-cups">
+                <span>🥇</span><span>🥇</span><span>🥇</span><span>🥇</span><span>🥇</span><span>🥇</span>
+            </div>
+        </div>
+
+        <!-- 版块2：班级之星 -->
+        <div class="section stars-section">
+            <div class="section-title">⭐ 班级之星 ⭐</div>
+
+            <div class="star-card study">
+                <div class="star-icon">📖</div>
+                <div class="star-info">
+                    <div class="star-label study-label">学习之星</div>
+                    <div class="star-name">若若</div>
+                    <div class="star-encourage">学习认真又努力，同学们的好榜样！</div>
+                </div>
+            </div>
+
+            <div class="star-card labor">
+                <div class="star-icon">🧹</div>
+                <div class="star-info">
+                    <div class="star-label labor-label">劳动之星</div>
+                    <div class="star-name">小红</div>
+                    <div class="star-encourage">不怕脏不怕累，教室因你更干净！</div>
+                </div>
+            </div>
+
+            <div class="star-card civilized">
+                <div class="star-icon">🌸</div>
+                <div class="star-info">
+                    <div class="star-label civilized-label">文明之星</div>
+                    <div class="star-name">明明</div>
+                    <div class="star-encourage">懂礼貌守纪律，文明好少年！</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 版块3：温馨提示 -->
+        <div class="section tips-section">
+            <div class="section-title">☀️ 温馨提示 ☀️</div>
+
+            <div class="tip-item">
+                <div class="tip-emoji">🧴</div>
+                <div class="tip-text"><strong>出门涂防晒</strong>，太阳公公虽然很热情，但紫外线会晒伤皮肤哦！出门前记得涂好防晒霜～</div>
+            </div>
+
+            <div class="tip-item">
+                <div class="tip-emoji">💧</div>
+                <div class="tip-text"><strong>多多喝水</strong>，夏天出汗多，身体里的水跑得快，记得常常喝水，不要等口渴了才喝！</div>
+            </div>
+
+            <div class="tip-item">
+                <div class="tip-emoji">🌡️</div>
+                <div class="tip-text"><strong>不要在大太阳下疯跑</strong>，中午太阳最毒的时候，最好在阴凉的地方玩，小心中暑哦！</div>
+            </div>
+
+            <div class="tip-item">
+                <div class="tip-emoji">🍦</div>
+                <div class="tip-text"><strong>冷饮不要贪多</strong>，冰激凌虽然好吃，但吃太多肚子会不开心的！适量才最棒～</div>
+            </div>
+        </div>
+
+        <!-- 版块4：趣味角 -->
+        <div class="section fun-section">
+            <div class="section-title">😄 趣味角 😄</div>
+
+            <div class="joke-box">
+                <div class="joke-q">小明问老师：<br>"老师，1+1等于几？"</div>
+                <div class="joke-divider">～～～ 💭 ～～～</div>
+                <div class="joke-a">老师说："等于2呀！"<br>小明说：<br>"那2+2呢？"<br>老师："等于4！"<br>小明："哇！越加越多！"<br>老师："……"<br>小明："那减法是不是越减越少？"<br>老师："对呀！"<br>小明："那我零花钱不要用减法！"</div>
+                <div class="joke-reaction">😂😂😂</div>
+            </div>
+        </div>
+
+        <!-- 下期预告 -->
+        <div class="section preview-section">
+            <div class="section-title">📢 下期预告 📢</div>
+            <div class="preview-box">
+                <div class="preview-emoji">🔍 ✨ 🎁</div>
+                <div class="preview-text">敬请期待下一期！</div>
+                <div class="preview-sub">
+                    更多精彩内容正在准备中～<br>
+                    你有什么好主意？<br>
+                    欢迎来告诉卓和创！<br>
+                    我们下期见！👋
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 底部 -->
+    <div class="footer">
+        <div class="footer-deco">🌈 ⭐ 🌈 ⭐ 🌈</div>
+        卓和创班级小报 · 每一期都精彩 · 下期再见！
+    </div>
+
+</div>
+
+</body>
+</html>
