@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卓和创的天气日记</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #87CEEB 0%, #B8E6FF 30%, #FFF8DC 60%, #FFE4B5 100%);
+            padding: 20px;
+        }
+
+        /* 标题 */
+        .app-title {
+            font-size: 32px;
+            color: #5D4037;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.6);
+            letter-spacing: 2px;
+        }
+
+        .app-title span {
+            color: #FF8C00;
+        }
+
+        /* 日记本外框 */
+        .diary-book {
+            position: relative;
+            width: 100%;
+            max-width: 680px;
+            background: #8B6914;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow:
+                0 8px 32px rgba(139, 105, 20, 0.5),
+                inset 0 2px 4px rgba(255,255,255,0.3),
+                inset 0 -2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 日记本装订线 */
+        .diary-book::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            background: repeating-linear-gradient(
+                180deg,
+                #6D4C00 0px,
+                #6D4C00 8px,
+                #8B6914 8px,
+                #8B6914 14px
+            );
+            border-radius: 3px;
+            z-index: 2;
+        }
+
+        /* 日记本内页区域 */
+        .diary-pages {
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 520px;
+        }
+
+        /* 左页 */
+        .page-left {
+            flex: 1;
+            background: linear-gradient(175deg, #FFF8E7 0%, #FFFEF5 50%, #FFF5D6 100%);
+            padding: 30px 28px 30px 30px;
+            position: relative;
+            border-right: 1px solid #E8D5A3;
+        }
+
+        /* 右页 */
+        .page-right {
+            flex: 1;
+            background: linear-gradient(185deg, #FFF5D6 0%, #FFFEF5 50%, #FFF8E7 100%);
+            padding: 30px 30px 30px 28px;
+            position: relative;
+            border-left: 1px solid #E8D5A3;
+        }
+
+        /* 横线格子纹理 */
+        .page-left, .page-right {
+            background-image: repeating-linear-gradient(
+                transparent,
+                transparent 31px,
+                #E8D5A3 31px,
+                #E8D5A3 32px
+            );
+            background-position: 0 29px;
+        }
+
+        /* 页面阴影效果 */
+        .page-left::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(0,0,0,0.06), transparent);
+            pointer-events: none;
+        }
+
+        .page-right::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.06), transparent);
+            pointer-events: none;
+        }
+
+        /* 日期标题 */
+        .date-title {
+            font-size: 22px;
+            color: #5D4037;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px dashed #DEB887;
+            line-height: 32px;
+        }
+
+        /* 左页内容区 */
+        .field-group {
+            margin-bottom: 18px;
+        }
+
+        .field-label {
+            font-size: 16px;
+            color: #8B6914;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 天气选择 */
+        .weather-picker {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .weather-btn {
+            width: 52px;
+            height: 52px;
+            border: 2px solid #DEB887;
+            border-radius: 14px;
+            background: #FFFEF5;
+            cursor: pointer;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .weather-btn:hover {
+            border-color: #FF8C00;
+            background: #FFF5D6;
+            transform: scale(1.08);
+        }
+
+        .weather-btn.active {
+            border-color: #FF8C00;
+            background: #FFE4B5;
+            box-shadow: 0 2px 8px rgba(255,140,0,0.3);
+            transform: scale(1.1);
+        }
+
+        /* 温度控制 */
+        .temp-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .temp-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #DEB887;
+            background: #FFFEF5;
+            font-size: 22px;
+            color: #8B6914;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .temp-btn:hover {
+            background: #FFE4B5;
+            border-color: #FF8C00;
+            transform: scale(1.1);
+        }
+
+        .temp-btn:active {
+            transform: scale(0.95);
+        }
+
+        .temp-value {
+            font-size: 28px;
+            color: #FF8C00;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* 心情选择 */
+        .mood-picker {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mood-btn {
+            padding: 8px 16px;
+            border: 2px solid #DEB887;
+            border-radius: 20px;
+            background: #FFFEF5;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .mood-btn:hover {
+            border-color: #FF8C00;
+            background: #FFF5D6;
+            transform: scale(1.05);
+        }
+
+        .mood-btn.active {
+            border-color: #FF8C00;
+            background: #FFE4B5;
+            box-shadow: 0 2px 8px rgba(255,140,0,0.3);
+        }
+
+        .mood-label {
+            font-size: 14px;
+            color: #8B6914;
+        }
+
+        /* 天气感受文本框 */
+        .feelings-box {
+            width: 100%;
+            min-height: 120px;
+            border: 2px solid #DEB887;
+            border-radius: 12px;
+            background: #FFFEF5;
+            padding: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            color: #5D4037;
+            resize: none;
+            outline: none;
+            line-height: 32px;
+            background-image: repeating-linear-gradient(
+                transparent,
+                transparent 31px,
+                #E8D5A3 31px,
+                #E8D5A3 32px
+            );
+            background-position: 0 11px;
+        }
+
+        .feelings-box:focus {
+            border-color: #FF8C00;
+            box-shadow: 0 0 0 3px rgba(255,140,0,0.15);
+        }
+
+        .feelings-box::placeholder {
+            color: #DEB887;
+        }
+
+        /* 右页装饰 - 小涂鸦区 */
+        .right-page-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .doodle-area {
+            width: 100%;
+            flex: 1;
+            border: 2px dashed #DEB887;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #DEB887;
+            font-size: 15px;
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doodle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .doodle-hint {
+            position: absolute;
+            bottom: 10px;
+            font-size: 13px;
+            color: #DEB887;
+            pointer-events: none;
+        }
+
+        .doodle-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #DEB887;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .color-btn.active {
+            border-color: #FF8C00;
+            box-shadow: 0 0 0 2px rgba(255,140,0,0.4);
+            transform: scale(1.15);
+        }
+
+        .clear-doodle-btn {
+            padding: 4px 14px;
+            border-radius: 12px;
+            border: 2px solid #DEB887;
+            background: #FFFEF5;
+            color: #8B6914;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-doodle-btn:hover {
+            background: #FFE4B5;
+            border-color: #FF8C00;
+        }
+
+        /* 底部导航 */
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 24px;
+            border-radius: 25px;
+            border: none;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-prev, .btn-next {
+            background: linear-gradient(135deg, #FFE4B5, #FFDAB9);
+            color: #8B6914;
+            box-shadow: 0 3px 10px rgba(139,105,20,0.2);
+        }
+
+        .btn-prev:hover, .btn-next:hover {
+            background: linear-gradient(135deg, #FFDAB9, #FFC89E);
+            box-shadow: 0 4px 14px rgba(139,105,20,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-new {
+            background: linear-gradient(135deg, #87CEEB, #B8E6FF);
+            color: #2E6B8A;
+            box-shadow: 0 3px 10px rgba(46,107,138,0.2);
+        }
+
+        .btn-new:hover {
+            background: linear-gradient(135deg, #6BB8D9, #A3D9F5);
+            box-shadow: 0 4px 14px rgba(46,107,138,0.3);
+            transform: translateY(-2px);
+        }
+
+        .page-indicator {
+            font-size: 16px;
+            color: #8B6914;
+            padding: 8px 16px;
+            background: rgba(255,248,231,0.8);
+            border-radius: 20px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #DEB887;
+            text-align: center;
+            gap: 12px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+        }
+
+        /* 翻页动画 */
+        .diary-pages {
+            transition: opacity 0.3s;
+        }
+
+        .diary-pages.flipping {
+            opacity: 0.5;
+        }
+
+        /* 日期输入 */
+        .date-input {
+            font-family: inherit;
+            font-size: 20px;
+            color: #5D4037;
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed #DEB887;
+            text-align: center;
+            outline: none;
+            padding: 2px 8px;
+            width: 160px;
+        }
+
+        .date-input:focus {
+            border-bottom-color: #FF8C00;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .diary-pages {
+                flex-direction: column;
+            }
+
+            .page-left, .page-right {
+                border-right: none;
+                border-left: none;
+            }
+
+            .page-left {
+                border-bottom: 1px solid #E8D5A3;
+            }
+
+            .diary-book::before {
+                display: none;
+            }
+
+            .diary-book {
+                padding: 10px;
+            }
+
+            .app-title {
+                font-size: 24px;
+            }
+
+            .weather-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+
+            .mood-btn {
+                padding: 6px 12px;
+                font-size: 20px;
+            }
+        }
+
+        /* 打印优化 */
+        @media print {
+            body {
+                background: white;
+            }
+            .nav-bar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-title">卓和创的<span>天气日记</span></div>
+
+    <div class="diary-book">
+        <div class="diary-pages" id="diaryPages">
+            <!-- 左页 -->
+            <div class="page-left" id="pageLeft">
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <div class="empty-icon">📖</div>
+                    <p>还没有日记哦</p>
+                    <p>点击下方"新建今天"开始吧！</p>
+                </div>
+                <div id="diaryContent">
+                    <div class="date-title">
+                        <input type="date" class="date-input" id="dateInput">
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">天气</div>
+                        <div class="weather-picker" id="weatherPicker">
+                            <button class="weather-btn" data-weather="sunny" title="晴天">☀️</button>
+                            <button class="weather-btn" data-weather="cloudy" title="多云">⛅</button>
+                            <button class="weather-btn" data-weather="overcast" title="阴天">🌥️</button>
+                            <button class="weather-btn" data-weather="rainy" title="雨天">🌧️</button>
+                            <button class="weather-btn" data-weather="windy" title="大风">🌬️</button>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">温度</div>
+                        <div class="temp-control">
+                            <button class="temp-btn" id="tempDown">−</button>
+                            <div class="temp-value" id="tempValue">25°C</div>
+                            <button class="temp-btn" id="tempUp">+</button>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">心情</div>
+                        <div class="mood-picker" id="moodPicker">
+                            <button class="mood-btn" data-mood="happy">😊 <span class="mood-label">开心</span></button>
+                            <button class="mood-btn" data-mood="normal">😐 <span class="mood-label">普通</span></button>
+                            <button class="mood-btn" data-mood="sad">😢 <span class="mood-label">不开心</span></button>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">今天的天气感受</div>
+                        <textarea class="feelings-box" id="feelingsBox" placeholder="写写今天的天气给你什么感觉吧..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右页 - 涂鸦区 -->
+            <div class="page-right">
+                <div class="right-page-content">
+                    <div class="field-label" style="margin-bottom:8px;">涂鸦区</div>
+                    <div class="doodle-tools">
+                        <button class="color-btn active" data-color="#5D4037" style="background:#5D4037;"></button>
+                        <button class="color-btn" data-color="#FF8C00" style="background:#FF8C00;"></button>
+                        <button class="color-btn" data-color="#2196F3" style="background:#2196F3;"></button>
+                        <button class="color-btn" data-color="#4CAF50" style="background:#4CAF50;"></button>
+                        <button class="color-btn" data-color="#E91E63" style="background:#E91E63;"></button>
+                        <button class="color-btn" data-color="#9C27B0" style="background:#9C27B0;"></button>
+                        <button class="clear-doodle-btn" id="clearDoodle">橡皮擦</button>
+                    </div>
+                    <div class="doodle-area">
+                        <canvas class="doodle-canvas" id="doodleCanvas"></canvas>
+                        <div class="doodle-hint" id="doodleHint">在这里画一画今天的天气吧~</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <button class="nav-btn btn-prev" id="btnPrev">上一页</button>
+        <button class="nav-btn btn-new" id="btnNew">新建今天</button>
+        <button class="nav-btn btn-next" id="btnNext">下一页</button>
+        <div class="page-indicator" id="pageIndicator">第0页 / 共0页</div>
+    </div>
+
+    <script>
+        // ===== 数据管理 =====
+        const STORAGE_KEY = 'zhz_weather_diary';
+        let pages = [];
+        let currentIndex = 0;
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    pages = JSON.parse(saved);
+                }
+            } catch (e) {
+                pages = [];
+            }
+            if (!pages.length) {
+                pages = [];
+                currentIndex = -1;
+            } else {
+                currentIndex = 0;
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
+        }
+
+        function getCurrentPage() {
+            if (currentIndex >= 0 && currentIndex < pages.length) {
+                return pages[currentIndex];
+            }
+            return null;
+        }
+
+        // ===== 日期工具 =====
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${weekdays[d.getDay()]}`;
+        }
+
+        function getTodayStr() {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+
+        // ===== 渲染 =====
+        function render() {
+            const page = getCurrentPage();
+            const emptyState = document.getElementById('emptyState');
+            const diaryContent = document.getElementById('diaryContent');
+            const indicator = document.getElementById('pageIndicator');
+
+            if (!page) {
+                emptyState.style.display = 'flex';
+                diaryContent.style.display = 'none';
+                indicator.textContent = '第0页 / 共0页';
+                clearCanvas();
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            diaryContent.style.display = 'block';
+
+            // 日期
+            document.getElementById('dateInput').value = page.date;
+
+            // 天气
+            document.querySelectorAll('.weather-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.weather === page.weather);
+            });
+
+            // 温度
+            document.getElementById('tempValue').textContent = page.temperature + '°C';
+
+            // 心情
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mood === page.mood);
+            });
+
+            // 感受
+            document.getElementById('feelingsBox').value = page.feelings || '';
+
+            // 涂鸦
+            loadDoodle(page.doodle);
+
+            // 页码
+            indicator.textContent = `第${currentIndex + 1}页 / 共${pages.length}页`;
+        }
+
+        // ===== 自动保存当前页 =====
+        function autoSave() {
+            const page = getCurrentPage();
+            if (!page) return;
+
+            page.date = document.getElementById('dateInput').value;
+            page.feelings = document.getElementById('feelingsBox').value;
+            page.doodle = saveDoodleData();
+            saveData();
+        }
+
+        // ===== 天气选择 =====
+        document.getElementById('weatherPicker').addEventListener('click', (e) => {
+            const btn = e.target.closest('.weather-btn');
+            if (!btn) return;
+            const page = getCurrentPage();
+            if (!page) return;
+
+            document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            page.weather = btn.dataset.weather;
+            autoSave();
+        });
+
+        // ===== 温度控制 =====
+        document.getElementById('tempUp').addEventListener('click', () => {
+            const page = getCurrentPage();
+            if (!page) return;
+            if (page.temperature < 50) {
+                page.temperature++;
+                document.getElementById('tempValue').textContent = page.temperature + '°C';
+                autoSave();
+            }
+        });
+
+        document.getElementById('tempDown').addEventListener('click', () => {
+            const page = getCurrentPage();
+            if (!page) return;
+            if (page.temperature > -30) {
+                page.temperature--;
+                document.getElementById('tempValue').textContent = page.temperature + '°C';
+                autoSave();
+            }
+        });
+
+        // ===== 心情选择 =====
+        document.getElementById('moodPicker').addEventListener('click', (e) => {
+            const btn = e.target.closest('.mood-btn');
+            if (!btn) return;
+            const page = getCurrentPage();
+            if (!page) return;
+
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            page.mood = btn.dataset.mood;
+            autoSave();
+        });
+
+        // ===== 日期变更 =====
+        document.getElementById('dateInput').addEventListener('change', () => {
+            autoSave();
+        });
+
+        // ===== 感受输入 =====
+        let feelingsTimer = null;
+        document.getElementById('feelingsBox').addEventListener('input', () => {
+            clearTimeout(feelingsTimer);
+            feelingsTimer = setTimeout(autoSave, 500);
+        });
+
+        // ===== 翻页 =====
+        function flipPage(direction) {
+            autoSave();
+            const pagesEl = document.getElementById('diaryPages');
+            pagesEl.classList.add('flipping');
+            setTimeout(() => {
+                currentIndex += direction;
+                if (currentIndex < 0) currentIndex = 0;
+                if (currentIndex >= pages.length) currentIndex = pages.length - 1;
+                render();
+                pagesEl.classList.remove('flipping');
+            }, 200);
+        }
+
+        document.getElementById('btnPrev').addEventListener('click', () => flipPage(-1));
+        document.getElementById('btnNext').addEventListener('click', () => flipPage(1));
+
+        // ===== 新建今天 =====
+        document.getElementById('btnNew').addEventListener('click', () => {
+            autoSave();
+            const today = getTodayStr();
+            // 检查今天是否已有记录
+            const existing = pages.findIndex(p => p.date === today);
+            if (existing !== -1) {
+                currentIndex = existing;
+                render();
+                return;
+            }
+            // 新建
+            const newPage = {
+                date: today,
+                weather: '',
+                temperature: 25,
+                mood: '',
+                feelings: '',
+                doodle: ''
+            };
+            pages.unshift(newPage);
+            // 按日期降序排列
+            pages.sort((a, b) => b.date.localeCompare(a.date));
+            currentIndex = pages.findIndex(p => p.date === today);
+            saveData();
+            render();
+        });
+
+        // ===== 涂鸦画板 =====
+        const canvas = document.getElementById('doodleCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let penColor = '#5D4037';
+        let penSize = 3;
+
+        function resizeCanvas() {
+            const area = canvas.parentElement;
+            canvas.width = area.clientWidth;
+            canvas.height = area.clientHeight;
+        }
+
+        function clearCanvas() {
+            resizeCanvas();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveDoodleData() {
+            if (canvas.width === 0 || canvas.height === 0) return '';
+            try {
+                return canvas.toDataURL('image/png');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function loadDoodle(dataUrl) {
+            resizeCanvas();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (dataUrl) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = dataUrl;
+            }
+        }
+
+        // 鼠标/触摸绘画
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            document.getElementById('doodleHint').style.display = 'none';
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!drawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = penColor;
+            ctx.lineWidth = penSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            autoSave();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            drawing = false;
+        });
+
+        // 触摸支持
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            drawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            document.getElementById('doodleHint').style.display = 'none';
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!drawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = penColor;
+            ctx.lineWidth = penSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('touchend', () => {
+            drawing = false;
+            autoSave();
+        });
+
+        // 颜色选择
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                penColor = btn.dataset.color;
+            });
+        });
+
+        // 橡皮擦
+        document.getElementById('clearDoodle').addEventListener('click', () => {
+            clearCanvas();
+            const page = getCurrentPage();
+            if (page) {
+                page.doodle = '';
+                autoSave();
+            }
+            document.getElementById('doodleHint').style.display = 'block';
+        });
+
+        // 窗口大小变化时重绘
+        window.addEventListener('resize', () => {
+            const page = getCurrentPage();
+            if (page && page.doodle) {
+                loadDoodle(page.doodle);
+            } else {
+                resizeCanvas();
+            }
+        });
+
+        // ===== 初始化 =====
+        loadData();
+        render();
+    </script>
+</body>
+</html>
