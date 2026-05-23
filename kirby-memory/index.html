@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星之卡比 - 记忆配对游戏</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2D1B4E 0%, #5B2C8E 15%, #7B3FAF 30%, #C94B8C 50%, #F5A0B5 70%, #FFD1E0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 小星星 */
+        .star {
+            position: fixed;
+            pointer-events: none;
+            animation: twinkle 2s ease-in-out infinite;
+            font-size: 20px;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-60px); opacity: 0; }
+        }
+
+        @keyframes rock {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(6deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-6deg); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes celebrateGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,200,100,0.5), 0 0 20px rgba(255,150,200,0.3); }
+            50% { box-shadow: 0 0 25px rgba(255,200,100,0.9), 0 0 45px rgba(255,150,200,0.7), 0 0 60px rgba(255,255,100,0.5); }
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .rocking {
+            animation: rock 0.4s ease-in-out;
+        }
+
+        .title {
+            font-size: 42px;
+            color: #FFF;
+            text-shadow:
+                3px 3px 0 #FF69B4,
+                -1px -1px 0 #FFB6C1,
+                0 0 30px rgba(255,182,193,0.6);
+            margin-bottom: 6px;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .title .kirby-icon {
+            display: inline-block;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #FFD1E0;
+            margin-bottom: 16px;
+            text-shadow: 0 0 10px rgba(255,209,224,0.5);
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 12px 30px;
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,182,193,0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .status-item {
+            font-size: 20px;
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+
+        .status-item .val {
+            font-size: 26px;
+            font-weight: bold;
+            color: #FFE44D;
+        }
+
+        /* 卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            max-width: 700px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            perspective: 600px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched .card-inner {
+            animation: celebrateGlow 1s ease-in-out infinite;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* 背面 */
+        .card-back {
+            background: linear-gradient(135deg, #FFB6C1, #FF69B4, #FF1493);
+            border: 4px solid #FF69B4;
+            font-size: 50px;
+            color: white;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
+        .card-back::after {
+            content: '';
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            border: 3px dashed rgba(255,255,255,0.4);
+        }
+
+        /* 正面 */
+        .card-front {
+            background: linear-gradient(135deg, #FFF8FA, #FFD1E0);
+            border: 4px solid #FFB6C1;
+            transform: rotateY(180deg);
+            z-index: 1;
+        }
+
+        .card-front .char-circle {
+            width: 70%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 -4px 8px rgba(0,0,0,0.1);
+        }
+
+        .char-circle::before {
+            content: '';
+            position: absolute;
+            width: 45%;
+            height: 25%;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            top: 15%;
+            left: 27%;
+        }
+
+        .card-front .char-name {
+            position: absolute;
+            bottom: 10px;
+            font-size: 14px;
+            color: #5D4037;
+            background: rgba(255,255,255,0.8);
+            padding: 2px 12px;
+            border-radius: 10px;
+            border: 1px solid #FFB6C1;
+        }
+
+        /* 各角色颜色 */
+        .color-kirby { background: #FF8EAD; }
+        .color-elf { background: #64B5F6; }
+        .color-waddle { background: #FFB74D; }
+        .color-meta { background: #353580; color: white; }
+        .color-dedede { background: #9E9E9E; }
+
+        /* 按钮 */
+        .btn-restart {
+            font-family: inherit;
+            font-size: 22px;
+            padding: 12px 40px;
+            border-radius: 30px;
+            border: 3px solid #FF69B4;
+            background: linear-gradient(135deg, #FFB6C1, #FF69B4);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,105,180,0.4);
+            transition: all 0.2s;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255,105,180,0.5);
+        }
+
+        .btn-restart:active {
+            transform: scale(0.95);
+        }
+
+        .btn-home {
+            font-family: inherit;
+            font-size: 18px;
+            padding: 10px 28px;
+            border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.25);
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 8px;
+            transition: all 0.2s;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn-home:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        /* 庆祝覆盖层 */
+        .celebration {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .celebration.show {
+            display: flex;
+            animation: popIn 0.5s ease-out;
+        }
+
+        .celebration-box {
+            background: linear-gradient(135deg, #FFD1E0, #FFB6C1, #FFD1E0);
+            border-radius: 30px;
+            padding: 40px 50px;
+            text-align: center;
+            border: 4px solid #FF69B4;
+            box-shadow: 0 0 40px rgba(255,182,193,0.6);
+        }
+
+        .celebration-box h2 {
+            font-size: 36px;
+            color: #D6336C;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+        }
+
+        .celebration-box .big-kirby {
+            font-size: 80px;
+            animation: bounce 0.8s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .celebration-box .stats {
+            font-size: 22px;
+            color: #8B1A40;
+            margin: 15px 0;
+        }
+
+        .celebration-box .btn-close {
+            font-family: inherit;
+            font-size: 22px;
+            padding: 12px 40px;
+            border-radius: 30px;
+            border: 3px solid #FF69B4;
+            background: linear-gradient(135deg, #FF69B4, #D6336C);
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(214,51,108,0.4);
+            transition: all 0.2s;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+
+        .celebration-box .btn-close:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(214,51,108,0.5);
+        }
+
+        /* 七彩纸屑 */
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 110;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                max-width: 340px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            .status-bar {
+                padding: 10px 18px;
+                gap: 14px;
+            }
+
+            .status-item {
+                font-size: 16px;
+            }
+
+            .status-item .val {
+                font-size: 20px;
+            }
+
+            .celebration-box {
+                padding: 25px 30px;
+            }
+
+            .celebration-box h2 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 星星背景 -->
+    <div id="starsContainer"></div>
+
+    <!-- 标题 -->
+    <div class="title">
+        <span class="kirby-icon">⭐</span> 星之卡比 <span class="kirby-icon">⭐</span>
+    </div>
+    <div class="subtitle">记忆配对游戏 - 卓和创设计</div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div class="status-item">已找到 <span class="val" id="matchCount">0</span> 对 / 共5对</div>
+        <div class="status-item">翻牌次数：<span class="val" id="flipCount">0</span> 次</div>
+    </div>
+
+    <!-- 卡片网格 -->
+    <div class="card-grid" id="cardGrid"></div>
+
+    <!-- 按钮 -->
+    <button class="btn-restart" id="btnRestart">🔄 重新开始</button>
+    <a class="btn-home" href="../">🏠 返回主页</a>
+
+    <!-- 庆祝覆盖层 -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-box">
+            <div class="big-kirby">🌸</div>
+            <h2>太厉害了！</h2>
+            <p style="font-size:28px;color:#D6336C;">卓和创为你鼓掌！</p>
+            <div class="stats" id="celebStats"></div>
+            <button class="btn-close" id="btnPlayAgain">🎮 再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // ---- 音效 (Web Audio API) ----
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function getAudioCtx() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
+        }
+
+        function playMatchSound() {
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            // 清脆的"叮"声 - 两个高频纯音
+            [800, 1200].forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.3, now + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + i * 0.1);
+                osc.stop(now + i * 0.1 + 0.5);
+            });
+            // 辉光音
+            const osc3 = ctx.createOscillator();
+            const gain3 = ctx.createGain();
+            osc3.type = 'sine';
+            osc3.frequency.value = 1600;
+            gain3.gain.setValueAtTime(0.2, now + 0.2);
+            gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+            osc3.connect(gain3);
+            gain3.connect(ctx.destination);
+            osc3.start(now + 0.2);
+            osc3.stop(now + 0.9);
+        }
+
+        function playMismatchSound() {
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            // 低沉的"嗡嗡"错误提示
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.setValueAtTime(220, now + 0.15);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        }
+
+        function playFlipSound() {
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.setValueAtTime(900, now + 0.04);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        }
+
+        function playWinSound() {
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            // 胜利旋律：上行琶音
+            const melody = [523, 659, 784, 1047]; // C5 E5 G5 C6
+            melody.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                const t = now + i * 0.15;
+                gain.gain.setValueAtTime(0.25, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.4);
+            });
+        }
+
+        // ---- 游戏数据 ----
+        const characters = [
+            { id: 'kirby', name: '卡比', emoji: '🩷', colorClass: 'color-kirby' },
+            { id: 'elf', name: '艾菲灵', emoji: '💙', colorClass: 'color-elf' },
+            { id: 'waddle', name: '头巾瓦豆鲁迪', emoji: '🟠', colorClass: 'color-waddle' },
+            { id: 'meta', name: '魅塔骑士', emoji: '⚔️', colorClass: 'color-meta' },
+            { id: 'dedede', name: '帝帝帝大王', emoji: '🔨', colorClass: 'color-dedede' },
+        ];
+
+        let cards = [];
+        let flippedCards = [];
+        let matchCount = 0;
+        let flipCount = 0;
+        let lockBoard = false;
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function createDeck() {
+            cards = [];
+            characters.forEach((char, idx) => {
+                cards.push({ ...char, pairId: idx });
+                cards.push({ ...char, pairId: idx });
+            });
+            cards = shuffle(cards);
+        }
+
+        function updateStats() {
+            document.getElementById('matchCount').textContent = matchCount;
+            document.getElementById('flipCount').textContent = flipCount;
+        }
+
+        function createStarBackground() {
+            const container = document.getElementById('starsContainer');
+            const symbols = ['⭐', '✦', '✧', '⋆', '·', '✨', '💫'];
+            for (let i = 0; i < 40; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                star.style.left = Math.random() * 95 + '%';
+                star.style.top = Math.random() * 95 + '%';
+                star.style.fontSize = (12 + Math.random() * 28) + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (1.5 + Math.random() * 3) + 's';
+                star.style.color = ['#FFD700','#FFB6C1','#FFF','#FFE4B5','#E0B0FF'][Math.floor(Math.random() * 5)];
+                container.appendChild(star);
+            }
+        }
+
+        function renderCards() {
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+            cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.dataset.index = index;
+                cardEl.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-back">❓</div>
+                        <div class="card-face card-front">
+                            <div class="char-circle ${card.colorClass}">${card.emoji}</div>
+                            <div class="char-name">${card.name}</div>
+                        </div>
+                    </div>
+                `;
+                cardEl.addEventListener('click', () => onCardClick(index, cardEl));
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function onCardClick(index, cardEl) {
+            if (lockBoard) return;
+            if (cardEl.classList.contains('flipped')) return;
+            if (cardEl.classList.contains('matched')) return;
+            // 已翻了两张还没处理完
+            if (flippedCards.length >= 2) return;
+            // 不能点同一张
+            if (flippedCards.length === 1 && flippedCards[0].index === index) return;
+
+            playFlipSound();
+
+            cardEl.classList.add('flipped');
+            flipCount++;
+            updateStats();
+
+            flippedCards.push({ index, el: cardEl });
+
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            lockBoard = true;
+            const [first, second] = flippedCards;
+            const card1 = cards[first.index];
+            const card2 = cards[second.index];
+
+            if (card1.pairId === card2.pairId) {
+                // 配对成功
+                setTimeout(() => {
+                    playMatchSound();
+                    first.el.classList.add('matched');
+                    second.el.classList.add('matched');
+                    matchCount++;
+                    updateStats();
+                    flippedCards = [];
+                    lockBoard = false;
+
+                    if (matchCount === 5) {
+                        setTimeout(showCelebration, 600);
+                    }
+                }, 400);
+            } else {
+                // 配对失败
+                setTimeout(() => {
+                    playMismatchSound();
+                    first.el.classList.add('rocking');
+                    second.el.classList.add('rocking');
+
+                    setTimeout(() => {
+                        first.el.classList.remove('flipped', 'rocking');
+                        second.el.classList.remove('flipped', 'rocking');
+                        flippedCards = [];
+                        lockBoard = false;
+                    }, 500);
+                }, 500);
+            }
+        }
+
+        function spawnConfetti() {
+            const colors = ['#FF69B4','#FFD700','#FF8C00','#87CEEB','#9C27B0','#4CAF50','#FF4081','#00BCD4'];
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.textContent = ['🌸','⭐','💖','🎀','✨','🌟','💕'][Math.floor(Math.random() * 7)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = -(10 + Math.random() * 40) + 'px';
+                confetti.style.fontSize = (16 + Math.random() * 28) + 'px';
+                confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `confettiFall ${2 + Math.random() * 3}s linear ${Math.random() * 0.8}s forwards`;
+                document.body.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        function showCelebration() {
+            playWinSound();
+            document.getElementById('celebStats').textContent =
+                `总共翻了 ${flipCount} 次！完美配对！`;
+            document.getElementById('celebration').classList.add('show');
+            spawnConfetti();
+        }
+
+        function hideCelebration() {
+            document.getElementById('celebration').classList.remove('show');
+        }
+
+        function restartGame() {
+            hideCelebration();
+            createDeck();
+            matchCount = 0;
+            flipCount = 0;
+            flippedCards = [];
+            lockBoard = false;
+            updateStats();
+            renderCards();
+        }
+
+        // ---- 事件绑定 ----
+        document.getElementById('btnRestart').addEventListener('click', restartGame);
+        document.getElementById('btnPlayAgain').addEventListener('click', restartGame);
+
+        // ---- 初始化 ----
+        createStarBackground();
+        restartGame();
+    </script>
+</body>
+</html>
