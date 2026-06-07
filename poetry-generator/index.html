@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卓和创的诗歌生成器</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+            background: #F5E6C8;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            color: #4A3728;
+        }
+
+        /* 宣纸纹理 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(180, 160, 130, 0.03) 2px,
+                    rgba(180, 160, 130, 0.03) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(180, 160, 130, 0.02) 3px,
+                    rgba(180, 160, 130, 0.02) 6px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 左侧竹子装饰 */
+        .bamboo-left {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 80px;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.35;
+        }
+
+        /* 右侧梅花装饰 */
+        .plum-right {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 80px;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.35;
+        }
+
+        .main-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 30px 20px 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 标题区域 */
+        .title-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title-section h1 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 42px;
+            color: #8B4513;
+            text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.15);
+            margin-bottom: 6px;
+            letter-spacing: 4px;
+        }
+
+        .title-section .subtitle {
+            font-size: 16px;
+            color: #A0855B;
+            letter-spacing: 2px;
+        }
+
+        /* 小鸟装饰 */
+        .bird-deco {
+            display: inline-block;
+            margin: 0 8px;
+            vertical-align: middle;
+        }
+
+        /* 返回主页按钮 */
+        .back-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #C4956A, #A07850);
+            color: #FFF8E7;
+            padding: 10px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(139, 69, 19, 0.2);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        /* 模式切换标签 */
+        .mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 25px;
+        }
+
+        .mode-tab {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-family: 'ZCOOL KuaiLe', cursive;
+            border: 2px solid #C4956A;
+            background: rgba(255, 248, 231, 0.6);
+            color: #8B4513;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-tab:first-child {
+            border-radius: 25px 0 0 25px;
+        }
+
+        .mode-tab:last-child {
+            border-radius: 0 25px 25px 0;
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, #C4956A, #A07850);
+            color: #FFF8E7;
+            border-color: #A07850;
+        }
+
+        /* 内容卡片 */
+        .content-card {
+            background: rgba(255, 248, 231, 0.85);
+            border-radius: 20px;
+            padding: 30px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.1);
+            border: 1px solid rgba(196, 149, 106, 0.3);
+            position: relative;
+        }
+
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            border: 1px dashed rgba(196, 149, 106, 0.25);
+            border-radius: 16px;
+            pointer-events: none;
+        }
+
+        /* 输入区域 */
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 17px;
+            color: #8B4513;
+            margin-bottom: 8px;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #D4B896;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: #4A3728;
+            background: rgba(255, 255, 255, 0.7);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            border-color: #C4956A;
+            box-shadow: 0 0 10px rgba(196, 149, 106, 0.3);
+        }
+
+        .input-group textarea {
+            height: 60px;
+            resize: none;
+        }
+
+        /* 生成按钮 */
+        .gen-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            font-size: 20px;
+            font-family: 'ZCOOL KuaiLe', cursive;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+
+        .gen-btn.acrostic {
+            background: linear-gradient(135deg, #E8734A, #D4563A);
+            color: #FFF8E7;
+            box-shadow: 0 4px 15px rgba(232, 115, 74, 0.3);
+        }
+
+        .gen-btn.three-line {
+            background: linear-gradient(135deg, #5BAE7C, #4A9A6B);
+            color: #FFF8E7;
+            box-shadow: 0 4px 15px rgba(91, 174, 124, 0.3);
+        }
+
+        .gen-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .gen-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 诗歌展示区域 */
+        .poem-display {
+            margin-top: 20px;
+            padding: 25px 20px;
+            background: rgba(255, 252, 240, 0.9);
+            border-radius: 15px;
+            border: 1px solid rgba(196, 149, 106, 0.3);
+            display: none;
+            position: relative;
+        }
+
+        .poem-display.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .poem-display .poem-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 24px;
+            color: #8B4513;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .poem-line {
+            text-align: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 28px;
+            line-height: 2.2;
+            color: #4A3728;
+            margin: 5px 0;
+        }
+
+        .poem-line .first-char {
+            color: #D4563A;
+            font-weight: bold;
+            font-size: 30px;
+        }
+
+        /* 拼音样式 */
+        ruby {
+            ruby-align: center;
+        }
+
+        ruby rt {
+            font-size: 12px;
+            color: #A0A0A0;
+            font-family: 'Microsoft YaHei', sans-serif;
+            letter-spacing: 0;
+        }
+
+        .poem-line ruby rt {
+            font-size: 13px;
+        }
+
+        /* 收藏按钮 */
+        .save-btn {
+            display: block;
+            margin: 15px auto 0;
+            padding: 10px 28px;
+            font-size: 17px;
+            font-family: 'ZCOOL KuaiLe', cursive;
+            border: 2px dashed #C4956A;
+            border-radius: 20px;
+            background: rgba(255, 248, 231, 0.8);
+            color: #8B4513;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #C4956A;
+            color: #FFF8E7;
+            border-style: solid;
+        }
+
+        /* 诗集区域 */
+        .collection-section {
+            margin-top: 30px;
+        }
+
+        .collection-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .collection-header h2 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 30px;
+            color: #8B4513;
+        }
+
+        /* 诗集本背景 */
+        .collection-book {
+            background:
+                linear-gradient(135deg, rgba(255, 248, 231, 0.9), rgba(245, 230, 200, 0.9));
+            border-radius: 20px;
+            padding: 25px 20px;
+            border: 2px solid #D4B896;
+            box-shadow:
+                0 4px 20px rgba(139, 69, 19, 0.1),
+                inset 0 0 30px rgba(196, 149, 106, 0.1);
+            position: relative;
+            min-height: 100px;
+        }
+
+        /* 书脊效果 */
+        .collection-book::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: rgba(196, 149, 106, 0.3);
+            transform: translateX(-50%);
+        }
+
+        .empty-collection {
+            text-align: center;
+            color: #B8A080;
+            font-size: 16px;
+            padding: 20px;
+        }
+
+        /* 诗歌卡片 */
+        .poem-card {
+            background: rgba(255, 252, 240, 0.95);
+            border-radius: 15px;
+            padding: 18px 36px 18px 16px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(196, 149, 106, 0.3);
+            position: relative;
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.08);
+            animation: cardIn 0.4s ease;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .poem-card .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .poem-card .card-type {
+            font-size: 13px;
+            padding: 3px 12px;
+            border-radius: 12px;
+            color: #FFF8E7;
+        }
+
+        .card-type.acrostic-tag {
+            background: linear-gradient(135deg, #E8734A, #D4563A);
+        }
+
+        .card-type.three-line-tag {
+            background: linear-gradient(135deg, #5BAE7C, #4A9A6B);
+        }
+
+        .poem-card .card-theme {
+            font-size: 14px;
+            color: #A0855B;
+        }
+
+        .poem-card .card-poem {
+            text-align: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 22px;
+            line-height: 2.0;
+            color: #4A3728;
+        }
+
+        .poem-card .card-poem .first-char {
+            color: #D4563A;
+            font-weight: bold;
+        }
+
+        .poem-card .card-poem ruby rt {
+            font-size: 11px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 2px;
+            right: 12px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid #D4B896;
+            background: rgba(255, 248, 231, 0.8);
+            color: #C4956A;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            line-height: 1;
+        }
+
+        .delete-btn:hover {
+            background: #D4563A;
+            color: #FFF8E7;
+            border-color: #D4563A;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #B8A080;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        /* 生成中动画 */
+        .generating {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .generating.visible {
+            display: block;
+        }
+
+        .ink-drop {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #8B4513;
+            margin: 0 5px;
+            animation: inkDrop 1.2s infinite ease-in-out;
+        }
+
+        .ink-drop:nth-child(2) { animation-delay: 0.2s; }
+        .ink-drop:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes inkDrop {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 浮动花瓣装饰 */
+        .floating-petal {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .main-container {
+                padding: 20px 12px 30px;
+            }
+            .title-section h1 {
+                font-size: 32px;
+            }
+            .poem-line {
+                font-size: 24px;
+            }
+            .bamboo-left, .plum-right {
+                width: 40px;
+                opacity: 0.2;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 左侧竹子SVG -->
+<div class="bamboo-left">
+    <svg viewBox="0 0 80 800" xmlns="http://www.w3.org/2000/svg">
+        <!-- 竹竿1 -->
+        <line x1="25" y1="0" x2="25" y2="800" stroke="#5B8C5A" stroke-width="6" opacity="0.7"/>
+        <ellipse cx="25" cy="100" rx="5" ry="3" fill="#4A7A49" opacity="0.5"/>
+        <ellipse cx="25" cy="250" rx="5" ry="3" fill="#4A7A49" opacity="0.5"/>
+        <ellipse cx="25" cy="400" rx="5" ry="3" fill="#4A7A49" opacity="0.5"/>
+        <ellipse cx="25" cy="550" rx="5" ry="3" fill="#4A7A49" opacity="0.5"/>
+        <ellipse cx="25" cy="700" rx="5" ry="3" fill="#4A7A49" opacity="0.5"/>
+        <!-- 竹竿2 -->
+        <line x1="50" y1="50" x2="50" y2="800" stroke="#6B9C6A" stroke-width="5" opacity="0.6"/>
+        <ellipse cx="50" cy="180" rx="4" ry="2.5" fill="#5A8A59" opacity="0.4"/>
+        <ellipse cx="50" cy="350" rx="4" ry="2.5" fill="#5A8A59" opacity="0.4"/>
+        <ellipse cx="50" cy="520" rx="4" ry="2.5" fill="#5A8A59" opacity="0.4"/>
+        <ellipse cx="50" cy="680" rx="4" ry="2.5" fill="#5A8A59" opacity="0.4"/>
+        <!-- 竹叶 -->
+        <path d="M25 95 Q10 75 0 60 Q15 72 25 90" fill="#5B8C5A" opacity="0.6"/>
+        <path d="M25 95 Q40 70 55 58 Q38 72 25 90" fill="#6B9C6A" opacity="0.5"/>
+        <path d="M25 240 Q5 220 -5 205 Q10 218 25 235" fill="#5B8C5A" opacity="0.6"/>
+        <path d="M25 240 Q45 215 60 200 Q42 215 25 235" fill="#6B9C6A" opacity="0.5"/>
+        <path d="M50 170 Q65 150 75 138 Q62 152 50 167" fill="#6B9C6A" opacity="0.5"/>
+        <path d="M25 390 Q5 370 -8 355 Q8 368 25 385" fill="#5B8C5A" opacity="0.6"/>
+        <path d="M50 340 Q70 320 82 308 Q68 322 50 337" fill="#6B9C6A" opacity="0.5"/>
+        <path d="M25 540 Q8 518 -5 505 Q10 518 25 535" fill="#5B8C5A" opacity="0.6"/>
+        <path d="M50 510 Q68 490 78 478 Q65 492 50 507" fill="#6B9C6A" opacity="0.5"/>
+        <path d="M25 690 Q8 668 -5 655 Q10 668 25 685" fill="#5B8C5A" opacity="0.6"/>
+        <path d="M50 670 Q68 650 78 638 Q65 652 50 667" fill="#6B9C6A" opacity="0.5"/>
+    </svg>
+</div>
+
+<!-- 右侧梅花SVG -->
+<div class="plum-right">
+    <svg viewBox="0 0 80 800" xmlns="http://www.w3.org/2000/svg">
+        <!-- 梅枝 -->
+        <path d="M60 0 Q55 100 40 200 Q25 300 45 400 Q60 500 35 600 Q20 700 40 800"
+              stroke="#8B6B5A" stroke-width="4" fill="none" opacity="0.6"/>
+        <path d="M40 200 Q20 180 5 160" stroke="#8B6B5A" stroke-width="2.5" fill="none" opacity="0.5"/>
+        <path d="M45 400 Q70 380 80 360" stroke="#8B6B5A" stroke-width="2.5" fill="none" opacity="0.5"/>
+        <path d="M35 600 Q15 580 0 560" stroke="#8B6B5A" stroke-width="2.5" fill="none" opacity="0.5"/>
+        <!-- 梅花 -->
+        <g transform="translate(5,155) scale(0.5)" opacity="0.6">
+            <circle cx="0" cy="-8" r="6" fill="#F5A0B0"/>
+            <circle cx="7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="0" cy="0" r="4" fill="#FFE4B5"/>
+        </g>
+        <g transform="translate(40,195) scale(0.4)" opacity="0.5">
+            <circle cx="0" cy="-8" r="6" fill="#F5A0B0"/>
+            <circle cx="7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="0" cy="0" r="4" fill="#FFE4B5"/>
+        </g>
+        <g transform="translate(80,355) scale(0.45)" opacity="0.55">
+            <circle cx="0" cy="-8" r="6" fill="#F5A0B0"/>
+            <circle cx="7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="0" cy="0" r="4" fill="#FFE4B5"/>
+        </g>
+        <g transform="translate(0,555) scale(0.5)" opacity="0.6">
+            <circle cx="0" cy="-8" r="6" fill="#F5A0B0"/>
+            <circle cx="7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="0" cy="0" r="4" fill="#FFE4B5"/>
+        </g>
+        <g transform="translate(35,595) scale(0.35)" opacity="0.5">
+            <circle cx="0" cy="-8" r="6" fill="#F5A0B0"/>
+            <circle cx="7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-4.7" cy="6.5" r="6" fill="#F5A0B0"/>
+            <circle cx="-7.6" cy="-2.5" r="6" fill="#F5A0B0"/>
+            <circle cx="0" cy="0" r="4" fill="#FFE4B5"/>
+        </g>
+        <!-- 小鸟 -->
+        <g transform="translate(55, 500) scale(0.6)" opacity="0.5">
+            <ellipse cx="0" cy="0" rx="10" ry="7" fill="#8B6B5A"/>
+            <circle cx="-8" cy="-4" r="5" fill="#8B6B5A"/>
+            <circle cx="-9.5" cy="-5" r="1.5" fill="#4A3728"/>
+            <path d="M-13 -4 L-18 -5 L-13 -3" fill="#E8734A"/>
+            <path d="M5 -2 Q12 -10 8 -15" stroke="#8B6B5A" stroke-width="1.5" fill="none"/>
+            <path d="M6 -2 Q14 -8 11 -13" stroke="#8B6B5A" stroke-width="1.5" fill="none"/>
+        </g>
+    </svg>
+</div>
+
+<div class="main-container">
+
+    <!-- 标题 -->
+    <div class="title-section">
+        <h1>
+            <span class="bird-deco">
+                <svg width="28" height="22" viewBox="0 0 28 22"><ellipse cx="14" cy="12" rx="10" ry="7" fill="#8B6B5A" opacity="0.7"/><circle cx="8" cy="8" r="5" fill="#8B6B5A" opacity="0.7"/><circle cx="6.5" cy="7" r="1.5" fill="#FFF8E7"/><path d="M3 8 L-1 7 L3 9" fill="#E8734A" opacity="0.7"/><path d="M21 10 Q27 2 25 -3" stroke="#8B6B5A" stroke-width="1.5" fill="none" opacity="0.7"/></svg>
+            </span>
+            诗歌生成器
+            <span class="bird-deco">
+                <svg width="28" height="22" viewBox="0 0 28 22"><ellipse cx="14" cy="12" rx="10" ry="7" fill="#8B6B5A" opacity="0.7"/><circle cx="20" cy="8" r="5" fill="#8B6B5A" opacity="0.7"/><circle cx="21.5" cy="7" r="1.5" fill="#FFF8E7"/><path d="M25 8 L29 7 L25 9" fill="#E8734A" opacity="0.7"/><path d="M7 10 Q1 2 3 -3" stroke="#8B6B5A" stroke-width="1.5" fill="none" opacity="0.7"/></svg>
+            </span>
+        </h1>
+        <div class="subtitle">卓和创 · 笔下生花</div>
+    </div>
+
+    <!-- 模式切换 -->
+    <div class="mode-tabs">
+        <div class="mode-tab active" onclick="switchMode('acrostic')">藏头诗</div>
+        <div class="mode-tab" onclick="switchMode('three-line')">三行诗</div>
+    </div>
+
+    <!-- 藏头诗模式 -->
+    <div id="acrostic-mode" class="content-card">
+        <div class="input-group">
+            <label>请输入你想藏的字或词</label>
+            <input type="text" id="acrostic-chars" placeholder="比如：卓和创" maxlength="8">
+        </div>
+        <div class="input-group">
+            <label>请描述你想要的画面或主题</label>
+            <input type="text" id="acrostic-theme" placeholder="比如：春天的花园">
+        </div>
+        <button class="gen-btn acrostic" onclick="generateAcrostic()">生成藏头诗</button>
+        <div class="generating" id="acrostic-loading">
+            <span class="ink-drop"></span>
+            <span class="ink-drop"></span>
+            <span class="ink-drop"></span>
+        </div>
+        <div class="poem-display" id="acrostic-result"></div>
+    </div>
+
+    <!-- 三行诗模式 -->
+    <div id="three-line-mode" class="content-card" style="display:none;">
+        <div class="input-group">
+            <label>请描述你想要的画面或主题</label>
+            <input type="text" id="three-line-theme" placeholder="比如：雨天的窗边">
+        </div>
+        <button class="gen-btn three-line" onclick="generateThreeLine()">生成三行诗</button>
+        <div class="generating" id="three-line-loading">
+            <span class="ink-drop"></span>
+            <span class="ink-drop"></span>
+            <span class="ink-drop"></span>
+        </div>
+        <div class="poem-display" id="three-line-result"></div>
+    </div>
+
+    <!-- 我的诗集 -->
+    <div class="collection-section">
+        <div class="collection-header">
+            <h2>我的诗集</h2>
+        </div>
+        <div class="collection-book" id="collection-book">
+            <div class="empty-collection" id="empty-msg">还没有收藏诗歌，快去生成一首吧！</div>
+        </div>
+    </div>
+
+    <!-- 返回主页 -->
+    <a href="../index.html" class="back-btn" style="display:block;text-align:center;margin:20px auto 10px;width:fit-content;">&larr; 返回主页</a>
+
+    <!-- 页脚 -->
+    <div class="footer">卓和创的诗歌生成器 · 2026年</div>
+</div>
+
+<script>
+// ===== 拼音字典 =====
+const PINYIN_DICT = {
+    '一':'yī','二':'èr','三':'sān','四':'sì','五':'wǔ','六':'liù','七':'qī','八':'bā','九':'jiǔ','十':'shí',
+    '百':'bǎi','千':'qiān','万':'wàn','年':'nián','月':'yuè','日':'rì','天':'tiān','时':'shí','分':'fēn','秒':'miǎo',
+    '春':'chūn','夏':'xià','秋':'qiū','冬':'dōng','风':'fēng','雨':'yǔ','雪':'xuě','云':'yún','雾':'wù','霜':'shuāng',
+    '花':'huā','草':'cǎo','树':'shù','木':'mù','竹':'zhú','梅':'méi','兰':'lán','菊':'jú','荷':'hé','桃':'táo',
+    '山':'shān','水':'shuǐ','河':'hé','海':'hǎi','湖':'hú','江':'jiāng','溪':'xī','泉':'quán','石':'shí','岩':'yán',
+    '日':'rì','月':'yuè','星':'xīng','光':'guāng','明':'míng','暗':'àn','夜':'yè','晨':'chén','暮':'mù','夕':'xī',
+    '红':'hóng','绿':'lǜ','蓝':'lán','白':'bái','黑':'hēi','黄':'huáng','紫':'zǐ','青':'qīng','橙':'chéng','粉':'fěn',
+    '大':'dà','小':'xiǎo','长':'cháng','短':'duǎn','高':'gāo','低':'dī','远':'yuǎn','近':'jìn','深':'shēn','浅':'qiǎn',
+    '我':'wǒ','你':'nǐ','他':'tā','她':'tā','它':'tā','们':'men','人':'rén','心':'xīn','手':'shǒu','目':'mù',
+    '口':'kǒu','耳':'ěr','头':'tóu','足':'zú','身':'shēn','面':'miàn','眼':'yǎn','眉':'méi','齿':'chǐ','发':'fà',
+    '上':'shàng','下':'xià','左':'zuǒ','右':'yòu','前':'qián','后':'hòu','里':'lǐ','外':'wài','中':'zhōng','间':'jiān',
+    '东':'dōng','西':'xī','南':'nán','北':'běi','方':'fāng','圆':'yuán','直':'zhí','曲':'qū','平':'píng','斜':'xié',
+    '飞':'fēi','走':'zǒu','跑':'pǎo','跳':'tiào','游':'yóu','唱':'chàng','舞':'wǔ','画':'huà','写':'xiě','读':'dú',
+    '笑':'xiào','哭':'kū','喜':'xǐ','怒':'nù','忧':'yōu','思':'sī','想':'xiǎng','念':'niàn','梦':'mèng','觉':'jué',
+    '爱':'ài','恨':'hèn','情':'qíng','友':'yǒu','亲':'qīn','家':'jiā','国':'guó','乡':'xiāng','城':'chéng','村':'cūn',
+    '琴':'qín','棋':'qí','书':'shū','画':'huà','诗':'shī','词':'cí','歌':'gē','赋':'fù','曲':'qǔ','调':'diào',
+    '龙':'lóng','凤':'fèng','鹤':'hè','燕':'yàn','雁':'yàn','鸥':'ōu','莺':'yīng','鹊':'què','蝶':'dié','蜂':'fēng',
+    '鱼':'yú','虾':'xiā','蟹':'xiè','蛙':'wā','蛇':'shé','虎':'hǔ','豹':'bào','鹿':'lù','兔':'tù','猫':'māo',
+    '狗':'gǒu','猪':'zhū','牛':'niú','羊':'yáng','马':'mǎ','鸡':'jī','鸭':'yā','鹅':'é','鸟':'niǎo','虫':'chóng',
+    '来':'lái','去':'qù','回':'huí','到':'dào','过':'guò','开':'kāi','关':'guān','进':'jìn','出':'chū','起':'qǐ',
+    '落':'luò','升':'shēng','降':'jiàng','浮':'fú','沉':'chén','立':'lì','坐':'zuò','卧':'wò','行':'xíng','止':'zhǐ',
+    '听':'tīng','看':'kàn','说':'shuō','问':'wèn','答':'dá','叫':'jiào','呼':'hū','喊':'hǎn','笑':'xiào','语':'yǔ',
+    '多':'duō','少':'shǎo','好':'hǎo','坏':'huài','美':'měi','丑':'chǒu','善':'shàn','恶':'è','真':'zhēn','假':'jiǎ',
+    '新':'xīn','旧':'jiù','快':'kuài','慢':'màn','早':'zǎo','晚':'wǎn','忙':'máng','闲':'xián','冷':'lěng','热':'rè',
+    '暖':'nuǎn','凉':'liáng','干':'gān','湿':'shī','轻':'qīng','重':'zhòng','软':'ruǎn','硬':'yìng','甜':'tián','苦':'kǔ',
+    '香':'xiāng','臭':'chòu','酸':'suān','辣':'là','咸':'xián','淡':'dàn','浓':'nóng','清':'qīng','浑':'hún','浊':'zhuó',
+    '安':'ān','危':'wēi','静':'jìng','动':'dòng','稳':'wěn','变':'biàn','定':'dìng','乱':'luàn','顺':'shùn','逆':'nì',
+    '明':'míng','暗':'àn','亮':'liàng','辉':'huī','耀':'yào','映':'yìng','照':'zhào','射':'shè','闪':'shǎn','晃':'huǎng',
+    '路':'lù','道':'dào','门':'mén','窗':'chuāng','桥':'qiáo','楼':'lóu','台':'tái','阁':'gé','亭':'tíng','塔':'tǎ',
+    '衣':'yī','食':'shí','住':'zhù','行':'xíng','笔':'bǐ','墨':'mò','纸':'zhǐ','砚':'yàn','弓':'gōng','剑':'jiàn',
+    '金':'jīn','银':'yín','铜':'tóng','铁':'tiě','玉':'yù','珠':'zhū','宝':'bǎo','珍':'zhēn','翠':'cuì','碧':'bì',
+    '若':'ruò','如':'rú','似':'sì','像':'xiàng','是':'shì','非':'fēi','有':'yǒu','无':'wú','生':'shēng','死':'sǐ',
+    '此':'cǐ','彼':'bǐ','那':'nà','这':'zhè','各':'gè','每':'měi','全':'quán','都':'dōu','共':'gòng','只':'zhǐ',
+    '不':'bù','也':'yě','还':'hái','又':'yòu','再':'zài','已':'yǐ','曾':'céng','将':'jiāng','正':'zhèng','在':'zài',
+    '以':'yǐ','为':'wéi','与':'yǔ','及':'jí','从':'cóng','向':'xiàng','对':'duì','比':'bǐ','被':'bèi','把':'bǎ',
+    '啊':'a','呀':'ya','吧':'ba','呢':'ne','吗':'ma','哦':'o','嗯':'èn','哈':'hā','嘿':'hēi','嗨':'hāi',
+    '卓':'zhuó','和':'hé','创':'chuàng','歌':'gē','声':'shēng','影':'yǐng','照':'zhào','景':'jǐng','色':'sè','彩':'cǎi',
+    '翠':'cuì','苍':'cāng','碧':'bì','丹':'dān','朱':'zhū','素':'sù','玄':'xuán','墨':'mò','黛':'dài','绛':'jiàng',
+    '霜':'shuāng','露':'lù','霞':'xiá','虹':'hóng','雷':'léi','电':'diàn','晴':'qíng','阴':'yīn','暖':'nuǎn','寒':'hán',
+    '归':'guī','别':'bié','逢':'féng','聚':'jù','散':'sàn','望':'wàng','忆':'yì','寻':'xún','待':'dài','期':'qī',
+    '思':'sī','念':'niàn','怀':'huái','恋':'liàn','慕':'mù','惜':'xī','怜':'lián','愁':'chóu','欢':'huān','乐':'lè',
+    '伴':'bàn','随':'suí','领':'lǐng','带':'dài','扶':'fú','持':'chí','守':'shǒu','护':'hù','帮':'bāng','助':'zhù',
+    '更':'gèng','最':'zuì','极':'jí','太':'tài','很':'hěn','真':'zhēn','颇':'pō','稍':'shāo','略':'lüè','愈':'yù',
+    '犹':'yóu','尚':'shàng','且':'qiě','固':'gù','必':'bì','须':'xū','当':'dāng','应':'yīng','宜':'yí','可':'kě',
+    '醉':'zuì','醒':'xǐng','眠':'mián','卧':'wò','倚':'yǐ','坐':'zuò','立':'lì','行':'xíng','步':'bù','游':'yóu',
+    '帘':'lián','帐':'zhàng','枕':'zhěn','席':'xí','案':'àn','炉':'lú','灯':'dēng','烛':'zhú','镜':'jìng','扇':'shàn',
+    '棋':'qí','弦':'xián','笛':'dí','箫':'xiāo','鼓':'gǔ','钟':'zhōng','磬':'qìng','瑟':'sè','笙':'shēng','埙':'xūn',
+    '篇':'piān','章':'zhāng','卷':'juǎn','句':'jù','字':'zì','文':'wén','墨':'mò','毫':'háo','砚':'yàn','笺':'jiān',
+    '魂':'hún','魄':'pò','神':'shén','灵':'líng','仙':'xiān','圣':'shèng','贤':'xián','哲':'zhé','智':'zhì','慧':'huì',
+    '源':'yuán','流':'liú','涛':'tāo','浪':'làng','涟':'lián','漪':'yī','澜':'lán','潇':'xiāo','湘':'xiāng','浦':'pǔ',
+    '烟':'yān','尘':'chén','灰':'huī','焰':'yàn','灿':'càn','烂':'làn','焕':'huàn','炫':'xuàn','煜':'yù','熠':'yì',
+    '松':'sōng','柏':'bǎi','柳':'liǔ','桐':'tóng','枫':'fēng','梧':'wú','樟':'zhāng','楠':'nán','槐':'huái','榆':'yú',
+    '莲':'lián','蓉':'róng','薇':'wēi','蔷':'qiáng','茉莉':'mòlì','芍':'sháo','茉':'mò','葵':'kuí','兰':'lán','蕙':'huì',
+    '峰':'fēng','岭':'lǐng','崖':'yá','谷':'gǔ','涧':'jiàn','坡':'pō','坎':'kǎn','垄':'lǒng','甸':'diàn','原':'yuán',
+    '茶':'chá','酒':'jiǔ','泉':'quán','露':'lù','冰':'bīng','溪':'xī','瀑':'pù','潭':'tán','渊':'yuān','泊':'pō',
+    '谁':'shuí','何':'hé','哪':'nǎ','怎':'zěn','么':'me','什':'shén','么':'me','哪':'nǎ','几':'jǐ','多':'duō',
+    '既':'jì','虽':'suī','纵':'zòng','即':'jí','令':'lìng','若':'ruò','倘':'tǎng','如':'rú','设':'shè','假':'jiǎ',
+    '孤':'gū','独':'dú','寂':'jì','寥':'liáo','寞':'mò','闲':'xián','悠':'yōu','逸':'yì','雅':'yǎ','幽':'yōu',
+    '芳':'fāng','芬':'fēn','馨':'xīn','馨':'xīn','韵':'yùn','律':'lǜ','调':'diào','曲':'qǔ','音':'yīn','乐':'yuè',
+    '朝':'zhāo','暮':'mù','午':'wǔ','宵':'xiāo','旦':'dàn','昏':'hūn','曙':'shǔ','曦':'xī','晷':'guǐ','晩':'wǎn',
+    '纱':'shā','绫':'líng','绢':'juàn','绸':'chóu','缎':'duàn','锦':'jǐn','绣':'xiù','纹':'wén','饰':'shì','缀':'zhuì',
+    '骑':'qí','驾':'jià','航':'háng','渡':'dù','涉':'shè','越':'yuè','穿':'chuān','绕':'rào','沿':'yán','循':'xún',
+    '藏':'cáng','显':'xiǎn','现':'xiàn','隐':'yǐn','见':'jiàn','观':'guān','览':'lǎn','赏':'shǎng','视':'shì','窥':'kuī',
+    '拥':'yōng','抱':'bào','牵':'qiān','拉':'lā','推':'tuī','按':'àn','握':'wò','扣':'kòu','抚':'fǔ','摸':'mō',
+    '碧':'bì','苍':'cāng','茫':'máng','辽':'liáo','阔':'kuò','广':'guǎng','浩':'hào','瀚':'hàn','渺':'miǎo','漫':'màn',
+    '添':'tiān','减':'jiǎn','增':'zēng','删':'shān','补':'bǔ','换':'huàn','改':'gǎi','变':'biàn','转':'zhuǎn','移':'yí',
+    '端':'duān','旁':'páng','侧':'cè','底':'dǐ','顶':'dǐng','角':'jiǎo','缘':'yuán','沿':'yán','际':'jì','畔':'pàn',
+    '旷':'kuàng','朗':'lǎng','霁':'jì','晴':'qíng','霁':'jì','朦':'méng','胧':'lóng','渺':'miǎo','缈':'miǎo','缥':'piāo',
+    '芳':'fāng','菲':'fēi','茂':'mào','盛':'shèng','繁':'fán','荣':'róng','凋':'diāo','零':'líng','枯':'kū','萎':'wěi',
+    '蒙':'méng','罩':'zhào','笼':'lǒng','覆':'fù','盖':'gài','铺':'pū','展':'zhǎn','舒':'shū','卷':'juǎn','收':'shōu',
+    '缘':'yuán','份':'fèn','命':'mìng','运':'yùn','数':'shù','理':'lǐ','道':'dào','法':'fǎ','术':'shù','功':'gōng',
+    '嫩':'nèn','娇':'jiāo','柔':'róu','弱':'ruò','刚':'gāng','强':'qiáng','坚':'jiān','韧':'rèn','脆':'cuì','绵':'mián',
+    '旷':'kuàng','远':'yuǎn','博':'bó','厚':'hòu','淳':'chún','朴':'pǔ','华':'huá','丽':'lì','素':'sù','淡':'dàn',
+    '步':'bù','径':'jìng','途':'tú','程':'chéng','旅':'lǚ','游':'yóu','行':'xíng','迹':'jì','踪':'zōng','痕':'hén',
+    '影':'yǐng','形':'xíng','貌':'mào','相':'xiàng','姿':'zī','态':'tài','势':'shì','威':'wēi','仪':'yí','容':'róng',
+    '才':'cái','艺':'yì','技':'jì','能':'néng','力':'lì','志':'zhì','意':'yì','气':'qì','胆':'dǎn','识':'shí',
+    '迎':'yíng','送':'sòng','邀':'yāo','请':'qǐng','留':'liú','辞':'cí','谢':'xiè','拜':'bài','访':'fǎng','遇':'yù',
+    '窗':'chuāng','檐':'yán','廊':'láng','栏':'lán','阶':'jiē','墙':'qiáng','壁':'bì','瓦':'wǎ','砖':'zhuān','柱':'zhù',
+    '晓':'xiǎo','曙':'shǔ','曦':'xī','晷':'guǐ','午':'wǔ','暮':'mù','夕':'xī','晚':'wǎn','夜':'yè','宵':'xiāo',
+    '雨':'yǔ','霖':'lín','霏':'fēi','霪':'yín','淅':'xī','沥':'lì','潇':'xiāo','洒':'sǎ','滴':'dī','沐':'mù',
+    '织':'zhī','纺':'fǎng','裁':'cái','缝':'féng','绣':'xiù','编':'biān','结':'jié','系':'jì','缠':'chán','绕':'rào',
+    '毫':'háo','末':'mò','微':'wēi','细':'xì','精':'jīng','密':'mì','粗':'cū','疏':'shū','简':'jiǎn','繁':'fán',
+    '暖':'nuǎn','熏':'xūn','烘':'hōng','烤':'kǎo','蒸':'zhēng','煮':'zhǔ','烹':'pēng','煎':'jiān','熬':'áo','炼':'liàn',
+    '稻':'dào','麦':'mài','禾':'hé','苗':'miáo','穗':'suì','粒':'lì','仓':'cāng','廪':'lǐn','丰':'fēng','歉':'qiàn',
+    '霜':'shuāng','雪':'xuě','冰':'bīng','雹':'báo','霰':'xiàn','霓':'ní','霞':'xiá','霁':'jì','露':'lù','雾':'wù',
+    '舟':'zhōu','船':'chuán','帆':'fān','桨':'jiǎng','舵':'duò','锚':'máo','艇':'tǐng','舶':'bó','渡':'dù','航':'háng',
+    '尘':'chén','土':'tǔ','泥':'ní','沙':'shā','砾':'lì','矿':'kuàng','岩':'yán','礁':'jiāo','滩':'tān','岸':'àn',
+    '墨':'mò','笔':'bǐ','纸':'zhǐ','砚':'yàn','卷':'juǎn','册':'cè','篇':'piān','章':'zhāng','句':'jù','词':'cí',
+};
+
+// 获取拼音
+function getPinyin(char) {
+    if (PINYIN_DICT[char]) return PINYIN_DICT[char];
+    // 对于多音字或未收录的字，返回空
+    return '';
+}
+
+// 给文字添加拼音ruby标签
+function addRuby(text, highlightFirst) {
+    let html = '';
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === ' ' || ch === '，' || ch === '。' || ch === '！' || ch === '？' || ch === '、' || ch === '；' || ch === '：') {
+            html += ch;
+        } else {
+            const py = getPinyin(ch);
+            const isFirst = highlightFirst && i === 0;
+            if (isFirst) {
+                html += `<ruby><span class="first-char">${ch}</span><rp>(</rp><rt>${py}</rt><rp>)</rp></ruby>`;
+            } else {
+                html += `<ruby>${ch}<rp>(</rp><rt>${py}</rt><rp>)</rp></ruby>`;
+            }
+        }
+    }
+    return html;
+}
+
+// 给文字添加拼音ruby标签（不带高亮）
+function addRubyPlain(text) {
+    let html = '';
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === ' ' || ch === '，' || ch === '。' || ch === '！' || ch === '？' || ch === '、' || ch === '；' || ch === '：') {
+            html += ch;
+        } else {
+            const py = getPinyin(ch);
+            html += `<ruby>${ch}<rp>(</rp><rt>${py}</rt><rp>)</rp></ruby>`;
+        }
+    }
+    return html;
+}
+
+// ===== 诗歌生成库 =====
+
+// 藏头诗句库 - 按首字索引
+const ACROSTIC_LINES = {
+    '卓': [
+        '卓越风华映碧天','卓然独立万峰前','卓立云间望九天','卓绝才情动山川',
+        '卓尔不群出尘间','卓识远望千秋月','卓笔挥毫画万里'
+    ],
+    '和': [
+        '和风细雨润花田','和煦春风拂柳烟','和乐声声入远山','和鸣琴瑟共清欢',
+        '和光同尘映碧涟','和风送暖百花鲜','和声朗朗满天间'
+    ],
+    '创': [
+        '创出新篇赋雅篇','创意无穷画卷延','创世风华开盛景','创出奇景在人间',
+        '创获诗心向九天','创开新境入云烟','创写丹青万古传'
+    ],
+    '春': [
+        '春风拂面柳含烟','春光万里映山川','春来花发满庭芳','春雨润物细无声',
+        '春色满园关不住','春日迟迟花满天','春风化雨润心田'
+    ],
+    '夏': [
+        '夏风清凉伴荷香','夏日蝉鸣柳影长','夏雨忽来洗碧天','夏夜繁星映池塘',
+        '夏花绚烂胜春光','夏凉如水照华堂','夏云如画倚山岗'
+    ],
+    '秋': [
+        '秋月朗照映清泉','秋风萧瑟落叶黄','秋水长天共一色','秋霜染尽万山红',
+        '秋来金菊满庭芳','秋雨绵绵忆故乡','秋高气爽望远方'
+    ],
+    '冬': [
+        '冬雪纷飞覆远山','冬梅傲立暗香传','冬日暖阳照窗前','冬寒方知松柏坚',
+        '冬来万物待春还','冬夜炉火话团圆','冬风萧瑟雪漫漫'
+    ],
+    '花': [
+        '花开满园映日红','花香阵阵入帘栊','花影摇曳醉春风','花落知多少梦中',
+        '花间蝴蝶舞翩翩','花前月下共缠绵','花如锦绣映晴天'
+    ],
+    '月': [
+        '月光如水照花前','月明星稀夜阑珊','月下独酌思万千','月照西窗梦未还',
+        '月落乌啼霜满天','月色朦胧映远山','月华如练挂天边'
+    ],
+    '风': [
+        '风送花香入画堂','风吹柳絮漫天翔','风轻云淡日悠长','风起云涌动四方',
+        '风雨过后见彩虹','风花雪月总关情','风过竹林响叮当'
+    ],
+    '雪': [
+        '雪落无声覆远山','雪舞纷飞映碧天','雪中梅花独自寒','雪后初晴日光暖',
+        '雪映红梅分外妍','雪夜围炉话暖寒','雪山银装裹千山'
+    ],
+    '山': [
+        '山高水远路绵延','山花烂漫映晴天','山中岁月自悠然','山间溪水响潺潺',
+        '山色空蒙雨亦奇','山青水秀入画间','山间松柏岁寒坚'
+    ],
+    '水': [
+        '水光潋滟映晴天','水清见底鱼儿欢','水声潺潺绕山间','水天一色望无边',
+        '水映云霞如画卷','水中月影碎如烟','水过青山绿意添'
+    ],
+    '云': [
+        '云卷云舒自在天','云深不知处山间','云霞万里映长天','云中仙鹤舞翩翩',
+        '云淡风轻近午天','云遮雾罩远山间','云开日出映平川'
+    ],
+    '天': [
+        '天高云淡望远方','天涯何处无芳草','天边红霞映夕阳','天朗气清惠风畅',
+        '天上星辰伴月光','天地苍茫入画廊','天边雁阵向南方'
+    ],
+    '星': [
+        '星辰闪烁映碧天','星光点点照人间','星河灿烂夜无眠','星月交辉映碧涟',
+        '星空如画梦中看','星落长河映远山','星火燎原照九天'
+    ],
+    '光': [
+        '光辉万丈照人间','光影斑驳映窗前','光风霁月映晴天','光华璀璨耀山川',
+        '光芒四射暖人间','光映湖面碎如烟','光照万物生机添'
+    ],
+    '明': [
+        '明月高悬照碧天','明光万里映山川','明春花开又一年','明眸善睐笑嫣然',
+        '明朝更有新气象','明心见性悟人间','明珠璀璨映华年'
+    ],
+    '梦': [
+        '梦中花开似锦年','梦里不知身是客','梦回故里月如烟','梦笔生花写万千',
+        '梦入仙境忘尘缘','梦醒时分见晴天','梦随风转到天边'
+    ],
+    '心': [
+        '心如止水映清泉','心花怒放满庭芳','心怀天下志四方','心向远方路绵长',
+        '心有灵犀一点通','心清如水照人间','心随云鹤共飞翔'
+    ],
+    '爱': [
+        '爱如春风暖人间','爱花惜柳意绵绵','爱看夕阳映远山','爱听溪水响潺潺',
+        '爱在心间暖似烟','爱此青山绿水间','爱满天下笑开颜'
+    ],
+    '诗': [
+        '诗意盎然入画卷','诗情画意满人间','诗心一片向青天','诗酒花茶度华年',
+        '诗人笔下有千山','诗韵悠长绕碧涟','诗成风雨亦欣然'
+    ],
+    '歌': [
+        '歌声悠扬入云端','歌舞升平庆华年','歌声嘹亮响山间','歌尽桃花映碧天',
+        '歌中自有真情在','歌遍春风百花开','歌声如梦醉人间'
+    ],
+    '美': [
+        '美景如画入眼帘','美不胜收映晴天','美人如花隔云端','美酒佳肴共清欢',
+        '美好时光在心间','美梦成真笑开颜','美如仙境在人间'
+    ],
+    '好': [
+        '好风好雨好丰年','好山好水映晴天','好景如画入眼帘','好事连连满人间',
+        '好梦成真笑开颜','好花常开月常圆','好日长在福无边'
+    ],
+    '乐': [
+        '乐在其中笑开颜','乐看花开又一年','乐享太平好时光','乐声悠扬入云端',
+        '乐游原上望晴天','乐此不疲到暮年','乐随清风到远山'
+    ],
+    '学': [
+        '学海无涯苦作舟','学如逆水行小舟','学而不厌自悠然','学有所成报家园',
+        '学在书山寻妙径','学贯中西志四方','学思并进日日新'
+    ],
+    '书': [
+        '书香门第出英才','书中自有黄金屋','书声朗朗入云端','书画琴棋度华年',
+        '书卷多情似故人','书写春秋传万代','书生报国志气昂'
+    ],
+    '龙': [
+        '龙腾虎跃震九天','龙飞凤舞映人间','龙吟虎啸气如山','龙行天下志无边',
+        '龙翔万里破长天','龙跃云间映碧涟','龙盘虎踞守江山'
+    ],
+    '海': [
+        '海阔天空任翱翔','海纳百川有容大','海浪声声入梦乡','海天一色映朝阳',
+        '海风轻拂柳丝长','海鸥飞翔伴晚霞','海底明珠放光芒'
+    ],
+    '友': [
+        '友谊长存似春光','友爱如歌暖心房','友人相聚笑语香','友情似水绕山长',
+        '友来共饮杯中酒','友在身旁不觉寒','友朋千里共婵娟'
+    ],
+};
+
+// 通用诗句（用于没有专门库的字）
+const GENERIC_LINES = [
+    '{char}字开篇写华年','{char}字行来入画卷','{char}然一笑映晴天','{char}心独运出奇篇',
+    '{char}韵悠长绕碧涟','{char}影翩翩舞人间','{char}光万里照山川','{char}情满怀赋雅篇',
+    '{char}声入耳似清泉','{char}意无穷在心间','{char}气风发少年志','{char}华正茂映青天',
+];
+
+// 三行诗模板
+const THREE_LINE_TEMPLATES = {
+    '春天': {
+        see: ['桃花映红了溪水','柳枝轻轻摇摆着','蝴蝶飞过花丛间','燕子衔泥筑新巢','百花齐放在眼前'],
+        hear: ['溪水潺潺唱着歌','小鸟枝头叫喳喳','春风吹过树叶响','蜜蜂嗡嗡采花忙','蛙声阵阵起池塘'],
+        feel: ['心里暖暖像阳光','仿佛世界都醒了','希望像花一样开','幸福从心底涌出','一切美好正开始']
+    },
+    '夏天': {
+        see: ['荷花盛开在池塘','蜻蜓点水掠碧波','蝉儿趴在树干上','烈日高照当空悬','萤火虫点亮夜空'],
+        hear: ['蝉鸣声声入耳来','蛙声阵阵响四方','雷声隆隆天边响','雨滴叮咚落屋檐','海浪拍岸声悠扬'],
+        feel: ['微风吹来好清爽','冰凉的西瓜真甜','夏夜星空让人醉','阳光暖暖照心间','生活像冰淇淋甜']
+    },
+    '秋天': {
+        see: ['枫叶染红了山坡','金黄稻穗弯了腰','大雁排成一字飞','银杏叶铺满小路','柿子挂满枝头红'],
+        hear: ['秋风沙沙落叶飘','雁声嘹唳过长空','蟋蟀弹琴在墙角','稻浪翻涌似海潮','秋雨淅沥打窗棂'],
+        feel: ['一丝凉意入心来','收获的喜悦满满','思念如叶飘远方','心中温暖如秋阳','感恩这丰盈时光']
+    },
+    '冬天': {
+        see: ['雪花纷纷落大地','梅花独自开枝头','白雪覆盖了屋顶','冰凌挂在屋檐下','炉火映红了脸庞'],
+        hear: ['北风呼啸过旷野','炉火噼啪响不停','雪花簌簌落无声','脚踩积雪咯吱响','远处传来钟声响'],
+        feel: ['暖暖的被窝真舒服','手捧热茶暖洋洋','虽冷心里暖如春','等待春天再回来','团圆的时光最甜']
+    },
+    '雨天': {
+        see: ['雨丝密密织成网','水洼映出天空影','雨中花朵更娇艳','窗上雨滴画着画','乌云遮住了太阳'],
+        hear: ['雨滴叮咚敲窗户','哗哗雨声如交响','远处雷声滚滚来','屋檐滴水声不断','雨打芭蕉响叮当'],
+        feel: ['心里格外安静呢','好像世界在沐浴','窝在家里真温暖','烦恼被雨水冲走','空气清新如薄荷']
+    },
+    '海边': {
+        see: ['浪花翻滚似白云','沙滩上贝壳闪闪','海鸥翱翔碧空里','夕阳染红了海面','远处帆影点点'],
+        hear: ['海浪拍岸哗哗响','海鸥叫声穿云霄','风声呼呼过耳边','贝壳里海的回声','潮水退去沙沙响'],
+        feel: ['心胸变得好宽广','自由自在像海风','世界原来这么大','心像大海一样深','快乐如浪花翻涌']
+    },
+    '夜晚': {
+        see: ['星星眨眼在天边','月亮弯弯挂树梢','万家灯火映窗前','萤火虫在草丛闪','夜空如墨星如钻'],
+        hear: ['虫鸣声声伴夜风','远处传来犬吠声','风铃轻轻摇曳响','蛐蛐唱歌到天明','夜风低语如轻吟'],
+        feel: ['世界安静好和平','梦中故事要开始','温暖被窝像云朵','心也变得柔软了','明天又是新一天']
+    },
+    '花园': {
+        see: ['百花争艳映朝晖','蝴蝶翩翩舞花间','玫瑰红得像火焰','蜜蜂忙碌花丛中','花瓣上露珠闪烁'],
+        hear: ['蜜蜂嗡嗡采蜜忙','风过花丛沙沙响','鸟儿歌唱在枝头','泉水叮咚流过石','花儿悄悄开了口'],
+        feel: ['花香醉人入心田','仿佛走进了画卷','心中开出一朵花','美丽让人忘了忧','幸福如花在绽放']
+    },
+    '校园': {
+        see: ['操场上有奔跑的身影','教室里书声朗朗','黑板上写满知识','国旗在风中飘扬','走廊里笑声回荡'],
+        hear: ['下课铃声叮铃铃','同学们欢声笑语','老师讲课声入耳','操场上的加油声','朗朗读书声如歌'],
+        feel: ['学习真让人快乐','友谊温暖每一天','成长就是最美的路','知识打开新世界','未来充满可能性']
+    },
+    '森林': {
+        see: ['古木参天蔽日光','小鹿饮水溪边立','蘑菇藏在落叶下','松鼠抱果跑树间','阳光穿过叶缝洒'],
+        hear: ['鸟鸣声声在林间','溪水淙淙绕树流','风吹松涛如海浪','啄木鸟敲击树干','落叶沙沙脚步声'],
+        feel: ['仿佛进入了仙境','呼吸都变得香甜','心中充满好奇妙','自然是最好的老师','万物有灵让人敬畏']
+    },
+    '星空': {
+        see: ['繁星点点铺满天','银河横跨夜空中','流星划过留下光','北斗七星指方向','月亮在云中穿行'],
+        hear: ['夜风轻声说秘密','远处的虫鸣如歌','自己的心跳声清晰','宇宙在耳边低语','静得能听到星星眨眼'],
+        feel: ['觉得自己好渺小','又觉得充满力量','梦想像星星一样远','心随流星去远方','宇宙那么大我想去看看']
+    },
+    '窗边': {
+        see: ['窗外风景如画卷','雨滴在玻璃上滑行','阳光透过窗帘来','鸟儿停在窗台上','远山含黛映眼帘'],
+        hear: ['风铃轻轻摇曳响','窗外鸟儿声声鸣','雨打窗棂如轻乐','远处传来读书声','自己的呼吸声好轻'],
+        feel: ['时光在窗边慢下来','心里格外安静呢','窗是通往世界的门','安静中听见自己','这一刻只想发呆']
+    },
+};
+
+// 通用三行诗素材
+const GENERIC_THREE_LINE = {
+    see: ['眼前是一幅美丽的画','色彩斑斓映入眼底','远方的风景如诗如画','光影交错美不胜收','世界在眼前缓缓展开'],
+    hear: ['耳畔传来悠扬的声','声声入耳如天籁','风带来了远方的消息','每一声都像在说话','这声音让人心安'],
+    feel: ['心中涌起暖暖的感觉','幸福就藏在这一刻','世界温柔地拥抱着我','内心充满了感激','美好就在身边啊']
+};
+
+// ===== 当前状态 =====
+let currentMode = 'acrostic';
+let currentPoem = null; // { type, theme, lines }
+let collection = JSON.parse(localStorage.getItem('poem-collection') || '[]');
+
+// ===== 模式切换 =====
+function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+    if (mode === 'acrostic') {
+        document.querySelectorAll('.mode-tab')[0].classList.add('active');
+        document.getElementById('acrostic-mode').style.display = '';
+        document.getElementById('three-line-mode').style.display = 'none';
+    } else {
+        document.querySelectorAll('.mode-tab')[1].classList.add('active');
+        document.getElementById('acrostic-mode').style.display = 'none';
+        document.getElementById('three-line-mode').style.display = '';
+    }
+}
+
+// ===== 藏头诗生成 =====
+function generateAcrostic() {
+    const chars = document.getElementById('acrostic-chars').value.trim();
+    const theme = document.getElementById('acrostic-theme').value.trim();
+
+    if (!chars) {
+        alert('请输入你想藏的字或词！');
+        return;
+    }
+    if (!theme) {
+        alert('请描述你想要的画面或主题！');
+        return;
+    }
+
+    // 显示加载动画
+    document.getElementById('acrostic-loading').classList.add('visible');
+    document.getElementById('acrostic-result').classList.remove('visible');
+
+    setTimeout(() => {
+        const lines = [];
+        for (let i = 0; i < chars.length; i++) {
+            const ch = chars[i];
+            let line;
+            if (ACROSTIC_LINES[ch]) {
+                const candidates = ACROSTIC_LINES[ch];
+                line = candidates[Math.floor(Math.random() * candidates.length)];
+            } else {
+                const template = GENERIC_LINES[Math.floor(Math.random() * GENERIC_LINES.length)];
+                line = template.replace('{char}', ch);
+            }
+            lines.push(line);
+        }
+
+        currentPoem = { type: 'acrostic', theme: theme, chars: chars, lines: lines };
+        displayAcrosticPoem(lines, chars);
+
+        document.getElementById('acrostic-loading').classList.remove('visible');
+    }, 1200);
+}
+
+function displayAcrosticPoem(lines, chars) {
+    const container = document.getElementById('acrostic-result');
+    let html = '<div class="poem-title">藏头诗 · ' + chars + '</div>';
+    for (let i = 0; i < lines.length; i++) {
+        html += '<div class="poem-line">' + addRuby(lines[i], true) + '</div>';
+    }
+    html += '<button class="save-btn" onclick="saveToCollection()">收藏到诗集</button>';
+    container.innerHTML = html;
+    container.classList.add('visible');
+}
+
+// ===== 三行诗生成 =====
+function generateThreeLine() {
+    const theme = document.getElementById('three-line-theme').value.trim();
+
+    if (!theme) {
+        alert('请描述你想要的画面或主题！');
+        return;
+    }
+
+    document.getElementById('three-line-loading').classList.add('visible');
+    document.getElementById('three-line-result').classList.remove('visible');
+
+    setTimeout(() => {
+        const lines = generateThreeLinePoem(theme);
+        currentPoem = { type: 'three-line', theme: theme, lines: lines };
+        displayThreeLinePoem(lines);
+
+        document.getElementById('three-line-loading').classList.remove('visible');
+    }, 1000);
+}
+
+function generateThreeLinePoem(theme) {
+    // 匹配主题关键词
+    let template = null;
+    for (const key in THREE_LINE_TEMPLATES) {
+        if (theme.includes(key)) {
+            template = THREE_LINE_TEMPLATES[key];
+            break;
+        }
+    }
+
+    if (!template) {
+        template = GENERIC_THREE_LINE;
+    }
+
+    const seeLine = template.see[Math.floor(Math.random() * template.see.length)];
+    const hearLine = template.hear[Math.floor(Math.random() * template.hear.length)];
+    const feelLine = template.feel[Math.floor(Math.random() * template.feel.length)];
+
+    return [
+        '我看见：' + seeLine,
+        '我听见：' + hearLine,
+        '我感到：' + feelLine
+    ];
+}
+
+function displayThreeLinePoem(lines) {
+    const container = document.getElementById('three-line-result');
+    let html = '<div class="poem-title">三行诗</div>';
+    html += '<div class="poem-line">' + addRuby(lines[0], false) + '</div>';
+    html += '<div class="poem-line">' + addRuby(lines[1], false) + '</div>';
+    html += '<div class="poem-line">' + addRuby(lines[2], false) + '</div>';
+    html += '<button class="save-btn" onclick="saveToCollection()">收藏到诗集</button>';
+    container.innerHTML = html;
+    container.classList.add('visible');
+}
+
+// ===== 诗集功能 =====
+function saveToCollection() {
+    if (!currentPoem) return;
+
+    const poem = {
+        id: Date.now(),
+        type: currentPoem.type,
+        theme: currentPoem.theme,
+        lines: currentPoem.lines,
+        chars: currentPoem.chars || '',
+        time: new Date().toLocaleString('zh-CN')
+    };
+
+    collection.push(poem);
+    localStorage.setItem('poem-collection', JSON.stringify(collection));
+    renderCollection();
+
+    // 收藏按钮反馈
+    event.target.textContent = '已收藏！';
+    event.target.style.background = '#C4956A';
+    event.target.style.color = '#FFF8E7';
+    event.target.style.borderStyle = 'solid';
+    setTimeout(() => {
+        event.target.textContent = '收藏到诗集';
+        event.target.style.background = '';
+        event.target.style.color = '';
+        event.target.style.borderStyle = '';
+    }, 1500);
+}
+
+function deleteFromCollection(id) {
+    collection = collection.filter(p => p.id !== id);
+    localStorage.setItem('poem-collection', JSON.stringify(collection));
+    renderCollection();
+}
+
+function renderCollection() {
+    const container = document.getElementById('collection-book');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    if (collection.length === 0) {
+        container.innerHTML = '<div class="empty-collection" id="empty-msg">还没有收藏诗歌，快去生成一首吧！</div>';
+        return;
+    }
+
+    let html = '';
+    // 按时间倒序
+    const sorted = [...collection].reverse();
+    for (const poem of sorted) {
+        const typeLabel = poem.type === 'acrostic' ? '藏头诗' : '三行诗';
+        const typeClass = poem.type === 'acrostic' ? 'acrostic-tag' : 'three-line-tag';
+
+        html += '<div class="poem-card">';
+        html += '<button class="delete-btn" onclick="deleteFromCollection(' + poem.id + ')" title="删除">&times;</button>';
+        html += '<div class="card-meta">';
+        html += '<span class="card-type ' + typeClass + '">' + typeLabel + '</span>';
+        html += '<span class="card-theme">' + poem.theme + '</span>';
+        html += '</div>';
+        html += '<div class="card-poem">';
+        for (let i = 0; i < poem.lines.length; i++) {
+            const isAcrostic = poem.type === 'acrostic';
+            html += addRuby(poem.lines[i], isAcrostic);
+            if (i < poem.lines.length - 1) html += '<br>';
+        }
+        html += '</div>';
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+// 初始渲染诗集
+renderCollection();
+
+// ===== 浮动花瓣 =====
+function createPetal() {
+    const petal = document.createElement('div');
+    petal.className = 'floating-petal';
+    const size = 15 + Math.random() * 20;
+    const startX = Math.random() * window.innerWidth;
+    const duration = 8 + Math.random() * 10;
+
+    petal.style.cssText = `
+        left: ${startX}px;
+        top: -30px;
+        width: ${size}px;
+        height: ${size}px;
+        animation: petalFall ${duration}s linear forwards;
+    `;
+
+    // 随机花瓣SVG
+    const hue = Math.random() > 0.5 ? '350' : '30';
+    petal.innerHTML = `<svg viewBox="0 0 20 20" width="${size}" height="${size}"><ellipse cx="10" cy="10" rx="8" ry="5" fill="hsl(${hue},70%,80%)" transform="rotate(${Math.random()*360} 10 10)"/></svg>`;
+
+    document.body.appendChild(petal);
+    setTimeout(() => petal.remove(), duration * 1000);
+}
+
+// 添加花瓣动画CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes petalFall {
+        0% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+        50% { opacity: 0.2; }
+        100% { transform: translateY(${window.innerHeight + 60}px) rotate(720deg); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// 定期生成花瓣
+setInterval(createPetal, 3000);
+setTimeout(createPetal, 500);
+</script>
+
+</body>
+</html>
