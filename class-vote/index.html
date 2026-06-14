@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卓和创的班级投票工具</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ee9ca7 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .page-title {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 900;
+    color: #e84393;
+    text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0,0,0,0.08);
+    letter-spacing: 3px;
+    padding: 28px 0 10px;
+  }
+
+  /* ===== 主容器 ===== */
+  .main-layout {
+    display: flex;
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 24px 20px;
+    flex: 1;
+  }
+
+  /* ===== 左侧：4个场景 ===== */
+  .left-panel {
+    width: 300px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .scene-btn {
+    border: none;
+    border-radius: 22px;
+    padding: 30px 16px;
+    font-size: 19px;
+    font-weight: 900;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .scene-btn .emoji { font-size: 38px; }
+  .scene-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 26px rgba(0,0,0,0.18); }
+  .scene-btn.active { transform: scale(1.04); box-shadow: 0 0 0 4px #fff, 0 14px 32px rgba(0,0,0,0.25) !important; }
+
+  .scene-btn:nth-child(1) { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  .scene-btn:nth-child(2) { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+  .scene-btn:nth-child(3) { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+  .scene-btn:nth-child(4) { background: linear-gradient(135deg, #fa709a, #fee140); }
+
+  /* ===== 右侧：投票区 ===== */
+  .right-panel {
+    flex: 1;
+    background: #fff;
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .vote-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #e84393;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  /* ===== 输入行：选项 + 数字按钮 ===== */
+  .input-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fafafa;
+    border: 3px solid #e0e0e0;
+    border-radius: 18px;
+    padding: 14px 20px;
+    transition: all 0.3s ease;
+  }
+
+  .input-row:focus-within {
+    border-color: #a29bfe;
+    background: #f8f7ff;
+    box-shadow: 0 4px 14px rgba(162,155,254,0.15);
+  }
+
+  /* 灰色禁用行 */
+  .input-row.locked {
+    background: #f0f0f0;
+    border-color: #ddd;
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .input-row.locked .input-label {
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  /* 平票高亮行（黄色边框） */
+  .input-row.tied {
+    background: linear-gradient(135deg, #fff9e6, #fff3cd);
+    border-color: #f0932b;
+    box-shadow: 0 0 0 3px rgba(240,147,43,0.2);
+  }
+
+  /* 高亮获胜行 */
+  .input-row.winner {
+    background: linear-gradient(135deg, #fff5f6, #ffe8ec);
+    border-color: #ff7675;
+    box-shadow: 0 0 0 3px rgba(255,118,117,0.2);
+  }
+
+  .input-label {
+    flex: 1;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  /* 数字控制 */
+  .num-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .num-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: none;
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    color: #fff;
+  }
+
+  .num-minus {
+    background: linear-gradient(135deg, #ff7675, #d63031);
+    box-shadow: 0 3px 10px rgba(214,48,49,0.3);
+  }
+  .num-plus {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    box-shadow: 0 3px 10px rgba(0,184,148,0.3);
+  }
+
+  .num-btn:hover { transform: scale(1.1); }
+  .num-btn:active { transform: scale(0.95); }
+
+  .num-display {
+    width: 60px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #6c5ce7;
+    background: #ede7f6;
+    border: 2px solid #d4c4f9;
+    border-radius: 10px;
+    padding: 6px 4px;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .num-display::-webkit-inner-spin-button,
+  .num-display::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* 分割线 */
+  .divider {
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #ffeaa7, transparent);
+    border-radius: 2px;
+    margin: 10px 0;
+  }
+
+  /* ===== 结果面板 ===== */
+  .result-section {
+    margin-top: 8px;
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .result-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #e17055;
+  }
+
+  .total-badge {
+    font-size: 16px;
+    font-weight: 900;
+    color: #fff;
+    background: linear-gradient(135deg, #fd79a8, #e84393);
+    border-radius: 20px;
+    padding: 6px 18px;
+    box-shadow: 0 3px 10px rgba(232,67,147,0.3);
+  }
+
+  .result-row {
+    margin-bottom: 11px;
+  }
+
+  .result-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 4px;
+  }
+
+  .result-bar-bg {
+    width: 100%;
+    height: 28px;
+    background: #eee;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .result-bar {
+    height: 100%;
+    border-radius: 14px;
+    transition: width 0.5s ease;
+    min-width: 0;
+  }
+
+  /* ===== 底部按钮 ===== */
+  .bottom-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 2px dashed #eee;
+  }
+
+  .action-btn {
+    border: none;
+    border-radius: 14px;
+    padding: 13px 22px;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+  }
+
+  .reset-btn {
+    background: #fff;
+    border: 2px solid #b2bec3 !important;
+    color: #636e72;
+  }
+  .reset-btn:hover { border-color: #d63031 !important; color: #d63031; background: #fff5f5; }
+
+  .clear-all-btn {
+    background: #ffeaa7 !important;
+    border: 2px solid #fdcb6e !important;
+    color: #b7791f;
+  }
+  .clear-all-btn:hover { background: #fdcb6e !important; color: #fff; }
+
+  /* 空状态 */
+  .empty-result {
+    text-align: center;
+    color: #b2bec3;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 20px 0;
+  }
+
+  /* 平票警告提示 */
+  .tie-warning {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: #f0932b;
+    padding: 14px;
+    background: linear-gradient(135deg, #fff9e6, #fff3cd);
+    border: 3px solid #f0932b;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    animation: pulse 1.2s ease infinite alternate;
+  }
+
+  /* 全票通过提示 */
+  .unanimous {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #e84393;
+    padding: 16px;
+    background: linear-gradient(135deg, #fff5f6, #ffe8ec);
+    border: 3px solid #ff7675;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    animation: pulse 1.2s ease infinite alternate;
+  }
+
+  @keyframes pulse {
+    from { transform: scale(1); box-shadow: 0 4px 12px rgba(255,118,117,0.2); }
+    to { transform: scale(1.02); box-shadow: 0 8px 24px rgba(255,118,117,0.35); }
+  }
+
+  @keyframes shake {
+    0%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(4px)}
+    100%{transform:translateX(0)}
+  }
+
+  /* 页脚 */
+  .footer {
+    text-align: center;
+    padding: 14px 0 20px;
+    font-size: 15px;
+    color: #e17055;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.6);
+  }
+
+  .home-btn {
+    border: 3px solid #e84393;
+    border-radius: 20px;
+    background: #fff;
+    color: #e84393;
+    font-size: 18px;
+    font-weight: 900;
+    padding: 10px 36px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 2px;
+  }
+  .home-btn:hover {
+    background: #e84393;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(232,67,147,0.3);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeIn 0.35s ease forwards; }
+
+  /* 装饰气泡 */
+  .bubble {
+    position: fixed; border-radius: 50%; opacity: 0.12; pointer-events: none; z-index: 0;
+  }
+  .b1{width:200px;height:200px;background:#f093fb;top:-60px;right:-40px}
+  .b2{width:140px;height:140px;background:#4facfe;bottom:60px;left:-50px}
+  .b3{width:100px;height:100px;background:#43e97b;bottom:-30px;right:80px}
+  .b4{width:80px;height:80px;background:#fee140;top:120px;left:40px}
+
+  @media (max-width: 800px) {
+    .main-layout { flex-direction: column; }
+    .left-panel { width: 100%; min-width: unset; flex-direction: row; flex-wrap: wrap; }
+    .scene-btn { flex: 1; min-width: 130px; padding: 22px 10px; }
+    .scene-btn .emoji { font-size: 30px; } .scene-btn span { font-size: 15px; }
+    .page-title { font-size: 26px; }
+    .input-label { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bubble b1"></div><div class="bubble b2"></div>
+<div class="bubble b3"></div><div class="bubble b4"></div>
+
+<div class="page-title">卓和创的班级投票工具</div>
+
+<div class="main-layout">
+  <!-- 左边：4个场景 -->
+  <div class="left-panel">
+    <button class="scene-btn active" onclick="selectScene(0)">
+      <span class="emoji">🎉</span><span>选班级活动</span>
+    </button>
+    <button class="scene-btn" onclick="selectScene(1)">
+      <span class="emoji">🍱</span><span>选午餐</span>
+    </button>
+    <button class="scene-btn" onclick="selectScene(2)">
+      <span class="emoji">🎵</span><span>选班级歌曲</span>
+    </button>
+    <button class="scene-btn" onclick="selectScene(3)">
+      <span class="emoji">🌸</span><span>选春游地点</span>
+    </button>
+  </div>
+
+  <!-- 右边：投票区 -->
+  <div class="right-panel">
+    <div class="vote-title" id="vTitle">选班级活动</div>
+
+    <!-- 输入列表 -->
+    <div class="input-list" id="vInputs"></div>
+
+    <div class="divider"></div>
+
+    <!-- 结果面板 -->
+    <div class="result-section">
+      <div class="result-header">
+        <div class="result-title">📊 投票结果</div>
+        <div class="total-badge" id="totalBadge">共 0 / 45 人</div>
+      </div>
+      <div id="vResultPanel"><p class="empty-result">在上方填写每个选项的人数~</p></div>
+    </div>
+
+    <!-- 底部操作 -->
+    <div class="bottom-actions">
+      <button class="action-btn reset-btn" onclick="resetCurrent()">重新填写</button>
+      <button class="action-btn clear-all-btn" onclick="clearAll()">清空全部数据</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <button class="home-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">🏠 返回主页</button>
+  <div style="margin-top:6px">卓和创制作</div>
+</div>
+
+<script>
+  const scenes = [
+    { title:'选班级活动', options:['运动会','文艺汇演','游园会','看电影'], colors:['#f5576c','#f093fb','#ff6b6b','#e84393'] },
+    { title:'选午餐', options:['披萨','炸鸡','寿司','面条'], colors:['#00b4d8','#4facfe','#00f2fe','#48dbfb'] },
+    { title:'选班级歌曲', options:['小星星','明天会更好','童年'], colors:['#00b894','#43e97b','#38f9d7'] },
+    { title:'选春游地点', options:['动物园','植物园','科技馆','游乐园'], colors:['#fa709a','#fee140','#f9ca24','#f0932b'] }
+  ];
+
+  const MAX_TOTAL = 45;
+  let curScene = 0;
+
+  // --- 数据读写 ---
+  function loadVal(s,o){ return parseInt(localStorage.getItem(`v_${s}_${o}`)||'0'); }
+  function saveVal(s,o,v){ localStorage.setItem(`v_${s}_${o}`, v); }
+
+  // --- 计算当前总票数 ---
+  function getTotal() {
+    let t = 0;
+    scenes[curScene].options.forEach((_, i) => { t += loadVal(curScene, i); });
+    return t;
+  }
+
+  // --- 找票数最高的选项索引（处理平票）---
+  function getTopVoteIdxs() {
+    const scene = scenes[curScene];
+    let maxV = -1;
+    const idxs = [];
+    for (let i = 0; i < scene.options.length; i++) {
+      const v = loadVal(curScene, i);
+      if (v > maxV) { maxV = v; idxs.length = 0; idxs.push(i); }
+      else if (v === maxV && v > 0) { idxs.push(i); }
+    }
+    return { idxs, maxV, isTie: idxs.length > 1 };
+  }
+
+  // --- 是否全班已投完（总人数=45）---
+  function isAllDone() {
+    return getTotal() >= MAX_TOTAL;
+  }
+
+  // --- 选择场景 ---
+  function selectScene(idx) {
+    curScene = idx;
+    document.querySelectorAll('.scene-btn').forEach((b,i)=> b.classList.toggle('active', i===idx));
+    document.getElementById('vTitle').textContent = scenes[idx].title;
+    renderInputs();
+    renderResult();
+  }
+
+  // --- 渲染输入行 ---
+  function renderInputs() {
+    const container = document.getElementById('vInputs');
+    container.innerHTML = '';
+    const scene = scenes[curScene];
+    const currentTotal = getTotal();
+    const done = isAllDone();
+    const top = getTopVoteIdxs();
+
+    scene.options.forEach((opt, i) => {
+      const val = loadVal(curScene, i);
+
+      const row = document.createElement('div');
+      row.className = 'input-row fade-in';
+      row.style.animationDelay = `${i * 0.06}s`;
+      row.id = `row_${i}`;
+
+      // 全班投完后：平票→平票项高亮+可编辑，其他灰锁；无平票→赢家高亮，其他灰锁
+      let isLocked = false;
+      if (done) {
+        if (top.isTie) {
+          // 平票：平票选项可继续调整，非平票选项锁定
+          if (top.idxs.includes(i)) {
+            row.classList.add('tied');
+          } else {
+            row.classList.add('locked');
+            isLocked = true;
+          }
+        } else {
+          // 无平票：赢家高亮，其他灰锁
+          if (i === top.idxs[0] && val > 0) {
+            row.classList.add('winner');
+          } else {
+            row.classList.add('locked');
+          }
+          isLocked = true; // 无平票时全部锁定
+        }
+      }
+
+      const isFull = (!done && currentTotal >= MAX_TOTAL && val === 0);
+      const numDisabled = isLocked || (done && !top.isTie); // 平票时可编辑
+
+      row.innerHTML = `
+        <span class="input-label">${opt}</span>
+        <div class="num-control" style="${numDisabled ? 'opacity:0.3;pointer-events:none' : (isFull ? 'opacity:0.4;pointer-events:none' : '')}">
+          <button class="num-btn num-minus" onclick="changeNum(${i}, -1)" ${numDisabled ? 'disabled' : ''}>−</button>
+          <input type="number" class="num-display" id="inp_${i}" value="${val}" min="0"
+                 onchange="manualInput(${i}, this.value)" onfocus="this.select()"
+                 ${numDisabled ? 'disabled' : ''}>
+          <button class="num-btn num-plus" onclick="changeNum(${i}, +1)" ${numDisabled ? 'disabled' : ''}>+</button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  // --- 数字变化 ---
+  function changeNum(idx, delta) {
+    const done = isAllDone();
+    if (done) {
+      // 全班投完+平票时，允许调整平票选项（只能从平票项减票给另一个平票项）
+      const top = getTopVoteIdxs();
+      if (!top.isTie) return; // 无平票，完全锁定
+      if (!top.idxs.includes(idx)) return; // 非平票项，锁定
+    }
+
+    const input = document.getElementById(`inp_${idx}`);
+    let val = parseInt(input.value) || 0;
+
+    // 加的时候不能超过全班人数
+    if (delta > 0 && getTotal() >= MAX_TOTAL) {
+      shakeRow(idx);
+      return;
+    }
+
+    val = Math.max(0, Math.min(MAX_TOTAL - (getTotal() - val), val + delta));
+    input.value = val;
+    saveVal(curScene, idx, val);
+
+    // 重新渲染（可能解除平票，也可能产生新平票）
+    if (isAllDone()) {
+      renderInputs();
+    }
+
+    renderResult();
+  }
+
+  function manualInput(idx, valStr) {
+    const done = isAllDone();
+    if (done) {
+      // 全班投完+平票时，允许调整平票选项
+      const top = getTopVoteIdxs();
+      if (!top.isTie) return; // 无平票，完全锁定
+      if (!top.idxs.includes(idx)) return; // 非平票项，锁定
+    }
+
+    let val = parseInt(valStr) || 0;
+    if (val < 0) val = 0;
+
+    // 手动输入也不能超过剩余名额
+    const currentTotal = getTotal() - loadVal(curScene, idx);
+    if (val > MAX_TOTAL - currentTotal) {
+      val = MAX_TOTAL - currentTotal;
+    }
+
+    document.getElementById(`inp_${idx}`).value = val;
+    saveVal(curScene, idx, val);
+
+    // 重新渲染（可能解除平票，也可能产生新平票）
+    if (isAllDone()) {
+      renderInputs();
+    }
+
+    renderResult();
+  }
+
+  // --- 超限抖动提示 ---
+  function shakeRow(idx) {
+    const row = document.getElementById(`row_${idx}`);
+    if (!row) return;
+    row.style.animation = 'none';
+    row.offsetHeight;
+    row.style.animation = 'shake 0.4s ease';
+  }
+
+  // --- 渲染结果（实时更新） ---
+  function renderResult() {
+    const scene = scenes[curScene];
+    const panel = document.getElementById('vResultPanel');
+
+    let total = 0;
+    const votes = [];
+    scene.options.forEach((_, i) => {
+      const v = loadVal(curScene, i);
+      votes.push(v);
+      total += v;
+    });
+
+    // 找票数最高的选项（支持平票检测）
+    const top = getTopVoteIdxs();
+
+    // 更新总人数显示
+    document.getElementById('totalBadge').textContent = `共 ${total} / ${MAX_TOTAL} 人`;
+
+    if (total === 0) {
+      panel.innerHTML = '<p class="empty-result">在上方填写每个选项的人数~</p>';
+      return;
+    }
+
+    // 全班投完 → 判断平票还是胜出
+    if (isAllDone()) {
+      if (top.isTie) {
+        // 平票：显示警告，提示继续调整
+        const tiedNames = top.idxs.map(i => scene.options[i]).join(' 和 ');
+        panel.innerHTML = `
+          <div class="tie-warning">⚡ 平票！${tiedNames} 票数相同（${top.maxV}票），请继续调整</div>
+        `;
+        scene.options.forEach((opt, i) => {
+          const pct = total > 0 ? Math.round(votes[i] / total * 100) : 0;
+          const row = document.createElement('div');
+          row.className = 'result-row fade-in';
+          row.innerHTML = `
+            <div class="result-label">
+              <span>${top.idxs.includes(i) ? '⚡ ' : ''}${opt}</span>
+              <span>${votes[i]} 人 (${pct}%)</span>
+            </div>
+            <div class="result-bar-bg"><div class="result-bar" style="width:0;background:${scene.colors[i]}"></div></div>
+          `;
+          panel.appendChild(row);
+          setTimeout(() => { row.querySelector('.result-bar').style.width = pct + '%'; }, 30 + i * 60);
+        });
+        document.getElementById('totalBadge').textContent = `共 ${MAX_TOTAL} / ${MAX_TOTAL} 人 ⚡`;
+      } else {
+        // 无平票：显示胜出
+        const winnerIdx = top.idxs[0];
+        const topPct = Math.round(votes[winnerIdx] / total * 100);
+        panel.innerHTML = `
+          <div class="unanimous">🎉 投票完成！${scene.options[winnerIdx]} 获胜（${votes[winnerIdx]}票，${topPct}%）</div>
+        `;
+        scene.options.forEach((opt, i) => {
+          const pct = total > 0 ? Math.round(votes[i] / total * 100) : 0;
+          const row = document.createElement('div');
+          row.className = 'result-row fade-in';
+          row.innerHTML = `
+            <div class="result-label">
+              <span>${i === winnerIdx ? '👑 ' : ''}${opt}</span>
+              <span>${votes[i]} 人 (${pct}%)</span>
+            </div>
+            <div class="result-bar-bg"><div class="result-bar" style="width:0;background:${scene.colors[i]}"></div></div>
+          `;
+          panel.appendChild(row);
+          setTimeout(() => { row.querySelector('.result-bar').style.width = pct + '%'; }, 30 + i * 60);
+        });
+        document.getElementById('totalBadge').textContent = `共 ${MAX_TOTAL} / ${MAX_TOTAL} 人 ✅`;
+      }
+      return;
+    }
+
+    // 投票中：正常结果
+    panel.innerHTML = '';
+    scene.options.forEach((opt, i) => {
+      const pct = total > 0 ? Math.round(votes[i] / total * 100) : 0;
+      const row = document.createElement('div');
+      row.className = 'result-row fade-in';
+      row.innerHTML = `
+        <div class="result-label">
+          <span>${opt}</span><span>${votes[i]} 人 (${pct}%)</span>
+        </div>
+        <div class="result-bar-bg">
+          <div class="result-bar" style="width:0;background:${scene.colors[i]}"></div>
+        </div>
+      `;
+      panel.appendChild(row);
+      setTimeout(() => {
+        row.querySelector('.result-bar').style.width = pct + '%';
+      }, 30 + i * 60);
+    });
+  }
+
+  // --- 重置当前 ---
+  function resetCurrent() {
+    scenes[curScene].options.forEach((_, i) => saveVal(curScene, i, 0));
+    renderInputs();
+    renderResult();
+  }
+
+  // --- 清空全部 ---
+  function clearAll() {
+    if (!confirm('确定清空所有场景的全部数据？')) return;
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('v_'))
+      .forEach(k => localStorage.removeItem(k));
+    renderInputs();
+    renderResult();
+  }
+
+  // 初始化
+  selectScene(0);
+</script>
+</body>
+</html>
