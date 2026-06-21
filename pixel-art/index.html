@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卓和创的像素画编辑器</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(180deg, #FFE5EC 0%, #E8F4FF 50%, #FFF8E1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 返回主页按钮 */
+        .back-btn {
+            background: linear-gradient(135deg, #6CB4EE, #4A9FE0);
+            color: white;
+            padding: 10px 28px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 16px;
+            box-shadow: 0 3px 10px rgba(74, 159, 224, 0.3);
+            transition: all 0.3s;
+            margin-top: 25px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 159, 224, 0.4);
+        }
+
+        /* 标题 */
+        .title {
+            font-size: 36px;
+            color: #FF6B9D;
+            margin: 15px 0 5px;
+            text-shadow: 2px 2px 0 #FFD1DC, 4px 4px 8px rgba(255, 107, 157, 0.2);
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #8A9BA8;
+            margin-bottom: 20px;
+        }
+
+        /* 主区域 */
+        .main-area {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 画布容器 */
+        .canvas-wrap {
+            background: white;
+            padding: 12px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            border: 4px solid #FFD1DC;
+        }
+
+        #pixelCanvas {
+            border: 2px solid #E0E0E0;
+            cursor: crosshair;
+            touch-action: none;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            background: white;
+            width: 702px;
+            height: 702px;
+        }
+
+        /* 工具面板 */
+        .tool-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            border: 4px solid #B5E5FF;
+            width: 200px;
+        }
+
+        .tool-section {
+            margin-bottom: 18px;
+        }
+
+        .tool-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-label {
+            font-size: 15px;
+            color: #7A8B99;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        /* 工具按钮 */
+        .tool-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .tool-btn {
+            flex: 1;
+            padding: 10px;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            background: #F8F8F8;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            text-align: center;
+        }
+
+        .tool-btn.active {
+            border-color: #FF6B9D;
+            background: #FFF0F5;
+            transform: scale(1.05);
+        }
+
+        .tool-label {
+            display: block;
+            font-size: 12px;
+            color: #7A8B99;
+            margin-top: 4px;
+        }
+
+        /* 颜色选择 */
+        .colors {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .color-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 4px solid white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            border-color: #333;
+            transform: scale(1.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        /* 粗细选择 - 4档 */
+        .size-btns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .size-btn {
+            padding: 6px 2px;
+            border: 3px solid #E0E0E0;
+            border-radius: 10px;
+            background: #F8F8F8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            font-size: 13px;
+            color: #7A8B99;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .size-btn.active {
+            border-color: #6CB4EE;
+            background: #E8F4FF;
+            color: #4A9FE0;
+            transform: scale(1.05);
+        }
+
+        .size-dot {
+            background: #7A8B99;
+            border-radius: 50%;
+        }
+
+        .size-btn.active .size-dot {
+            background: #4A9FE0;
+        }
+
+        /* 保存按钮 */
+        .save-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #5BAE7C, #4A9A6B);
+            color: white;
+            font-size: 17px;
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(91, 174, 124, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(91, 174, 124, 0.4);
+        }
+
+        .save-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 画廊按钮 */
+        .gallery-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #B388FF, #9966FF);
+            color: white;
+            font-size: 17px;
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(153, 102, 255, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .gallery-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(153, 102, 255, 0.4);
+        }
+
+        /* 清空按钮 */
+        .clear-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #FF8C7A, #FF6B6B);
+            color: white;
+            font-size: 17px;
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .clear-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 页脚 */
+        .footer {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #B0BEC5;
+            letter-spacing: 2px;
+        }
+
+        /* 装饰 */
+        .deco {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        .deco-tl { top: 10px; right: 20px; }
+        .deco-br { bottom: 10px; left: 20px; }
+
+        /* 画廊弹窗 */
+        .gallery-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .gallery-overlay.visible {
+            display: flex;
+        }
+
+        .gallery-box {
+            background: white;
+            border-radius: 25px;
+            padding: 30px 25px;
+            max-width: 650px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 4px solid #B5E5FF;
+            position: relative;
+        }
+
+        .gallery-title {
+            font-size: 28px;
+            color: #9966FF;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .gallery-close {
+            position: absolute;
+            top: 15px;
+            right: 18px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid #E0E0E0;
+            background: #F8F8F8;
+            color: #999;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .gallery-close:hover {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .gallery-empty {
+            text-align: center;
+            color: #CCC;
+            font-size: 16px;
+            padding: 40px 0;
+        }
+
+        .gallery-item {
+            background: #F8F8F8;
+            border-radius: 15px;
+            padding: 10px;
+            border: 2px solid #E8E8E8;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .gallery-item:hover {
+            border-color: #B5E5FF;
+            transform: translateY(-2px);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            background: white;
+            border: 1px solid #E0E0E0;
+        }
+
+        .gallery-item-name {
+            font-size: 13px;
+            color: #7A8B99;
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .gallery-delete {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: #FF6B6B;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+        }
+
+        .gallery-delete:hover {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 800px) {
+            #pixelCanvas {
+                width: 90vw;
+                max-width: 702px;
+                height: auto;
+                aspect-ratio: 1 / 1;
+            }
+            .main-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            .tool-panel {
+                width: 100%;
+                max-width: 340px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 装饰星星 -->
+<div class="deco deco-tl">
+    <svg width="60" height="60" viewBox="0 0 60 60">
+        <path d="M30 5 L36 22 L55 22 L40 33 L45 52 L30 41 L15 52 L20 33 L5 22 L24 22 Z" fill="#FFD700"/>
+    </svg>
+</div>
+<div class="deco deco-br">
+    <svg width="50" height="50" viewBox="0 0 50 50">
+        <path d="M25 3 L30 18 L47 18 L33 28 L38 45 L25 35 L12 45 L17 28 L3 18 L20 18 Z" fill="#FF69B4"/>
+    </svg>
+</div>
+
+<!-- 标题 -->
+<h1 class="title">像素画编辑器</h1>
+<div class="subtitle">点击格子画画吧！</div>
+
+<!-- 主区域 -->
+<div class="main-area">
+    <!-- 画布 -->
+    <div class="canvas-wrap">
+        <canvas id="pixelCanvas" width="540" height="540"></canvas>
+    </div>
+
+    <!-- 工具面板 -->
+    <div class="tool-panel">
+        <!-- 工具 -->
+        <div class="tool-section">
+            <div class="section-label">工具</div>
+            <div class="tool-btns">
+                <div class="tool-btn active" id="brushTool" onclick="selectTool('brush')">
+                    <span>&#9999;&#65039;</span>
+                    <span class="tool-label">画笔</span>
+                </div>
+                <div class="tool-btn" id="eraserTool" onclick="selectTool('eraser')">
+                    <span>&#128430;</span>
+                    <span class="tool-label">橡皮</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 颜色 -->
+        <div class="tool-section">
+            <div class="section-label">颜色</div>
+            <div class="colors">
+                <div class="color-btn active" style="background:#FF4444" onclick="selectColor(this, '#FF4444')"></div>
+                <div class="color-btn" style="background:#FFD700" onclick="selectColor(this, '#FFD700')"></div>
+                <div class="color-btn" style="background:#4488FF" onclick="selectColor(this, '#4488FF')"></div>
+                <div class="color-btn" style="background:#FF8DC4" onclick="selectColor(this, '#FF8DC4')"></div>
+                <div class="color-btn" style="background:#FF8833" onclick="selectColor(this, '#FF8833')"></div>
+                <div class="color-btn" style="background:#00C9B1" onclick="selectColor(this, '#00C9B1')"></div>
+                <div class="color-btn" style="background:#9966FF" onclick="selectColor(this, '#9966FF')"></div>
+                <div class="color-btn" style="background:#333333" onclick="selectColor(this, '#333333')"></div>
+                <div class="color-btn" style="background:#FFFFFF;border:4px solid #DDD !important" onclick="selectColor(this, '#FFFFFF')"></div>
+            </div>
+        </div>
+
+        <!-- 粗细 - 4档 -->
+        <div class="tool-section">
+            <div class="section-label">粗细</div>
+            <div class="size-btns">
+                <div class="size-btn active" onclick="selectSize(this, 1)">
+                    <div class="size-dot" style="width:5px;height:5px;"></div>
+                    细
+                </div>
+                <div class="size-btn" onclick="selectSize(this, 2)">
+                    <div class="size-dot" style="width:8px;height:8px;"></div>
+                    中
+                </div>
+                <div class="size-btn" onclick="selectSize(this, 3)">
+                    <div class="size-dot" style="width:12px;height:12px;"></div>
+                    粗
+                </div>
+                <div class="size-btn" onclick="selectSize(this, 4)">
+                    <div class="size-dot" style="width:16px;height:16px;"></div>
+                    加粗
+                </div>
+            </div>
+        </div>
+
+        <!-- 保存 -->
+        <div class="tool-section">
+            <button class="save-btn" onclick="saveArtwork()">保存画作</button>
+        </div>
+
+        <!-- 我的画作 -->
+        <div class="tool-section">
+            <button class="gallery-btn" onclick="openGallery()">我的画作</button>
+        </div>
+
+        <!-- 清空 -->
+        <div class="tool-section">
+            <button class="clear-btn" onclick="clearCanvas()">清空画布</button>
+        </div>
+    </div>
+</div>
+
+<!-- 画廊弹窗 -->
+<div class="gallery-overlay" id="galleryOverlay" onclick="closeGalleryBg(event)">
+    <div class="gallery-box">
+        <div class="gallery-close" onclick="closeGallery()">&times;</div>
+        <div class="gallery-title">我的画作</div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+</div>
+
+<!-- 返回主页 -->
+<a href="../index.html" class="back-btn">&larr; 返回主页</a>
+
+<!-- 页脚 -->
+<div class="footer">卓和创 · 2026年创作</div>
+
+<script>
+const GRID_SIZE = 90;
+const CELL_SIZE = 6; // 90 * 6 = 540px
+const CANVAS_PX = GRID_SIZE * CELL_SIZE;
+
+const canvas = document.getElementById('pixelCanvas');
+const ctx = canvas.getContext('2d');
+
+let currentTool = 'brush';
+let currentColor = '#FF4444';
+let currentSize = 1;
+let isDrawing = false;
+
+// 像素数据：二维数组存颜色
+let pixelData = [];
+
+function initPixelData() {
+    pixelData = [];
+    for (let r = 0; r < GRID_SIZE; r++) {
+        const row = [];
+        for (let c = 0; c < GRID_SIZE; c++) {
+            row.push('#FFFFFF');
+        }
+        pixelData.push(row);
+    }
+}
+
+initPixelData();
+
+// 渲染画布
+function renderCanvas() {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, CANVAS_PX, CANVAS_PX);
+
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            if (pixelData[r][c] !== '#FFFFFF') {
+                ctx.fillStyle = pixelData[r][c];
+                ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+        }
+    }
+
+    // 网格线
+    ctx.strokeStyle = 'rgba(200,200,200,0.15)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= GRID_SIZE; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * CELL_SIZE, 0);
+        ctx.lineTo(i * CELL_SIZE, CANVAS_PX);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i * CELL_SIZE);
+        ctx.lineTo(CANVAS_PX, i * CELL_SIZE);
+        ctx.stroke();
+    }
+}
+
+renderCanvas();
+
+// 工具选择
+function selectTool(tool) {
+    currentTool = tool;
+    document.getElementById('brushTool').classList.toggle('active', tool === 'brush');
+    document.getElementById('eraserTool').classList.toggle('active', tool === 'eraser');
+    canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+// 颜色选择
+function selectColor(el, color) {
+    currentColor = color;
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    if (currentTool === 'eraser') {
+        selectTool('brush');
+    }
+}
+
+// 粗细选择
+function selectSize(el, size) {
+    currentSize = size;
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+
+// 涂色
+function paint(row, col) {
+    const half = Math.floor((currentSize - 1) / 2);
+    const extra = currentSize % 2 === 0 ? 1 : 0;
+
+    for (let dr = -half; dr <= half + (currentSize % 2 === 0 ? 0 : 0); dr++) {
+        for (let dc = -half; dc <= half; dc++) {
+            const r = row + dr;
+            const c = col + dc;
+            if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+                if (currentTool === 'eraser') {
+                    pixelData[r][c] = '#FFFFFF';
+                } else {
+                    pixelData[r][c] = currentColor;
+                }
+            }
+        }
+    }
+
+    // 对于偶数档位，补一行一列
+    if (currentSize === 2) {
+        for (let dc = -half; dc <= half; dc++) {
+            const c = col + dc;
+            const r = row + half + 1;
+            if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+                pixelData[r][c] = currentTool === 'eraser' ? '#FFFFFF' : currentColor;
+            }
+        }
+    } else if (currentSize === 4) {
+        for (let dc = -half - 1; dc <= half; dc++) {
+            const c = col + dc;
+            const r = row + half + 1;
+            if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+                pixelData[r][c] = currentTool === 'eraser' ? '#FFFFFF' : currentColor;
+            }
+        }
+        for (let dr = -half - 1; dr <= half; dr++) {
+            const r = row + dr;
+            const c = col + half + 1;
+            if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+                pixelData[r][c] = currentTool === 'eraser' ? '#FFFFFF' : currentColor;
+            }
+        }
+    }
+}
+
+// 从鼠标/触摸事件获取格子坐标
+function getGridCoord(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+    const col = Math.floor(x / CELL_SIZE);
+    const row = Math.floor(y / CELL_SIZE);
+    if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+        return { row, col };
+    }
+    return null;
+}
+
+// 简化涂色：按size画方形区域
+function paintSimple(row, col) {
+    const half = Math.floor(currentSize / 2);
+    for (let dr = 0; dr < currentSize; dr++) {
+        for (let dc = 0; dc < currentSize; dc++) {
+            const r = row - half + dr;
+            const c = col - half + dc;
+            if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+                pixelData[r][c] = currentTool === 'eraser' ? '#FFFFFF' : currentColor;
+            }
+        }
+    }
+}
+
+// 鼠标事件
+canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    const coord = getGridCoord(e.clientX, e.clientY);
+    if (coord) {
+        paintSimple(coord.row, coord.col);
+        renderCanvas();
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (!isDrawing) return;
+    const coord = getGridCoord(e.clientX, e.clientY);
+    if (coord) {
+        paintSimple(coord.row, coord.col);
+        renderCanvas();
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isDrawing = false;
+});
+
+// 触摸事件
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isDrawing = true;
+    const touch = e.touches[0];
+    const coord = getGridCoord(touch.clientX, touch.clientY);
+    if (coord) {
+        paintSimple(coord.row, coord.col);
+        renderCanvas();
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    const touch = e.touches[0];
+    const coord = getGridCoord(touch.clientX, touch.clientY);
+    if (coord) {
+        paintSimple(coord.row, coord.col);
+        renderCanvas();
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+    isDrawing = false;
+});
+
+// 清空画布
+function clearCanvas() {
+    initPixelData();
+    renderCanvas();
+}
+
+// ===== 保存功能 =====
+function saveArtwork() {
+    // 检查是否有内容
+    let hasContent = false;
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            if (pixelData[r][c] !== '#FFFFFF') { hasContent = true; break; }
+        }
+        if (hasContent) break;
+    }
+    if (!hasContent) {
+        alert('画布是空的，先画点什么吧！');
+        return;
+    }
+
+    // 生成缩略图（无网格线）
+    const thumbCanvas = document.createElement('canvas');
+    thumbCanvas.width = GRID_SIZE;
+    thumbCanvas.height = GRID_SIZE;
+    const thumbCtx = thumbCanvas.getContext('2d');
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            thumbCtx.fillStyle = pixelData[r][c];
+            thumbCtx.fillRect(c, r, 1, 1);
+        }
+    }
+
+    const dataURL = thumbCanvas.toDataURL('image/png');
+
+    // 获取已保存的画作
+    const saved = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+
+    const artwork = {
+        id: Date.now(),
+        data: dataURL,
+        time: new Date().toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    saved.push(artwork);
+    localStorage.setItem('pixel-art-gallery', JSON.stringify(saved));
+
+    // 按钮反馈
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '已保存！';
+    setTimeout(() => { btn.textContent = originalText; }, 1500);
+}
+
+// ===== 画廊功能 =====
+function openGallery() {
+    const overlay = document.getElementById('galleryOverlay');
+    const grid = document.getElementById('galleryGrid');
+
+    const saved = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+
+    if (saved.length === 0) {
+        grid.innerHTML = '<div class="gallery-empty">还没有保存的画作，画一幅然后点保存吧！</div>';
+    } else {
+        let html = '';
+        // 倒序显示（最新的在前）
+        for (let i = saved.length - 1; i >= 0; i--) {
+            const art = saved[i];
+            html += '<div class="gallery-item">';
+            html += '<div class="gallery-delete" onclick="deleteArtwork(' + art.id + ')">&times;</div>';
+            html += '<img src="' + art.data + '" alt="画作">';
+            html += '<div class="gallery-item-name">' + art.time + '</div>';
+            html += '</div>';
+        }
+        grid.innerHTML = html;
+    }
+
+    overlay.classList.add('visible');
+}
+
+function closeGallery() {
+    document.getElementById('galleryOverlay').classList.remove('visible');
+}
+
+function closeGalleryBg(e) {
+    if (e.target.id === 'galleryOverlay') {
+        closeGallery();
+    }
+}
+
+function deleteArtwork(id) {
+    let saved = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+    saved = saved.filter(a => a.id !== id);
+    localStorage.setItem('pixel-art-gallery', JSON.stringify(saved));
+    openGallery(); // 刷新画廊
+}
+</script>
+
+</body>
+</html>
