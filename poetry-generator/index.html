@@ -1043,9 +1043,28 @@ const GENERIC_THREE_LINE = {
 };
 
 // ===== 当前状态 =====
+function loadPoemCollection() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem('poem-collection') || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function persistPoemCollection() {
+    try {
+        localStorage.setItem('poem-collection', JSON.stringify(collection));
+        return true;
+    } catch (error) {
+        alert('诗集保存空间不足，请先删除一些旧收藏。');
+        return false;
+    }
+}
+
 let currentMode = 'acrostic';
 let currentPoem = null; // { type, theme, lines }
-let collection = JSON.parse(localStorage.getItem('poem-collection') || '[]');
+let collection = loadPoemCollection();
 
 // ===== 模式切换 =====
 function switchMode(mode) {
@@ -1108,7 +1127,7 @@ function displayAcrosticPoem(lines, chars) {
     for (let i = 0; i < lines.length; i++) {
         html += '<div class="poem-line">' + addRuby(lines[i], true) + '</div>';
     }
-    html += '<button class="save-btn" onclick="saveToCollection()">收藏到诗集</button>';
+    html += '<button class="save-btn" onclick="saveToCollection(event)">收藏到诗集</button>';
     container.innerHTML = html;
     container.classList.add('visible');
 }
@@ -1165,13 +1184,13 @@ function displayThreeLinePoem(lines) {
     html += '<div class="poem-line">' + addRuby(lines[0], false) + '</div>';
     html += '<div class="poem-line">' + addRuby(lines[1], false) + '</div>';
     html += '<div class="poem-line">' + addRuby(lines[2], false) + '</div>';
-    html += '<button class="save-btn" onclick="saveToCollection()">收藏到诗集</button>';
+    html += '<button class="save-btn" onclick="saveToCollection(event)">收藏到诗集</button>';
     container.innerHTML = html;
     container.classList.add('visible');
 }
 
 // ===== 诗集功能 =====
-function saveToCollection() {
+function saveToCollection(e) {
     if (!currentPoem) return;
 
     const poem = {
@@ -1184,25 +1203,33 @@ function saveToCollection() {
     };
 
     collection.push(poem);
-    localStorage.setItem('poem-collection', JSON.stringify(collection));
+    if (!persistPoemCollection()) {
+        collection.pop();
+        return;
+    }
     renderCollection();
 
     // 收藏按钮反馈
-    event.target.textContent = '已收藏！';
-    event.target.style.background = '#C4956A';
-    event.target.style.color = '#FFF8E7';
-    event.target.style.borderStyle = 'solid';
+    const btn = e.currentTarget;
+    btn.textContent = '已收藏！';
+    btn.style.background = '#C4956A';
+    btn.style.color = '#FFF8E7';
+    btn.style.borderStyle = 'solid';
     setTimeout(() => {
-        event.target.textContent = '收藏到诗集';
-        event.target.style.background = '';
-        event.target.style.color = '';
-        event.target.style.borderStyle = '';
+        btn.textContent = '收藏到诗集';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderStyle = '';
     }, 1500);
 }
 
 function deleteFromCollection(id) {
+    const previousCollection = collection;
     collection = collection.filter(p => p.id !== id);
-    localStorage.setItem('poem-collection', JSON.stringify(collection));
+    if (!persistPoemCollection()) {
+        collection = previousCollection;
+        return;
+    }
     renderCollection();
 }
 

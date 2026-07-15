@@ -532,7 +532,7 @@
 
         <!-- 保存 -->
         <div class="tool-section">
-            <button class="save-btn" onclick="saveArtwork()">保存画作</button>
+            <button class="save-btn" onclick="saveArtwork(event)">保存画作</button>
         </div>
 
         <!-- 我的画作 -->
@@ -779,7 +779,26 @@ function clearCanvas() {
 }
 
 // ===== 保存功能 =====
-function saveArtwork() {
+function loadSavedArtworks() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function persistSavedArtworks(saved) {
+    try {
+        localStorage.setItem('pixel-art-gallery', JSON.stringify(saved));
+        return true;
+    } catch (error) {
+        alert('保存空间不足，暂时无法保存这幅画。');
+        return false;
+    }
+}
+
+function saveArtwork(e) {
     // 检查是否有内容
     let hasContent = false;
     for (let r = 0; r < GRID_SIZE; r++) {
@@ -808,7 +827,7 @@ function saveArtwork() {
     const dataURL = thumbCanvas.toDataURL('image/png');
 
     // 获取已保存的画作
-    const saved = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+    const saved = loadSavedArtworks();
 
     const artwork = {
         id: Date.now(),
@@ -817,10 +836,10 @@ function saveArtwork() {
     };
 
     saved.push(artwork);
-    localStorage.setItem('pixel-art-gallery', JSON.stringify(saved));
+    if (!persistSavedArtworks(saved)) return;
 
     // 按钮反馈
-    const btn = event.target;
+    const btn = e.currentTarget;
     const originalText = btn.textContent;
     btn.textContent = '已保存！';
     setTimeout(() => { btn.textContent = originalText; }, 1500);
@@ -831,7 +850,7 @@ function openGallery() {
     const overlay = document.getElementById('galleryOverlay');
     const grid = document.getElementById('galleryGrid');
 
-    const saved = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+    const saved = loadSavedArtworks();
 
     if (saved.length === 0) {
         grid.innerHTML = '<div class="gallery-empty">还没有保存的画作，画一幅然后点保存吧！</div>';
@@ -863,10 +882,9 @@ function closeGalleryBg(e) {
 }
 
 function deleteArtwork(id) {
-    let saved = JSON.parse(localStorage.getItem('pixel-art-gallery') || '[]');
+    let saved = loadSavedArtworks();
     saved = saved.filter(a => a.id !== id);
-    localStorage.setItem('pixel-art-gallery', JSON.stringify(saved));
-    openGallery(); // 刷新画廊
+    if (persistSavedArtworks(saved)) openGallery(); // 刷新画廊
 }
 </script>
 

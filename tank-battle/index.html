@@ -37,6 +37,36 @@ canvas{display:block;background:#5C4A30;}
 .ctrl-group{display:flex;flex-direction:column;gap:4px;align-items:center;}
 .ctrl-p1 b{color:#D4A84B;}
 .ctrl-p2 b{color:#4ECDC4;}
+.touch-controls{
+  display:none;width:min(600px,95vw);gap:12px;margin-top:14px;
+  justify-content:space-between;touch-action:none;user-select:none;
+  -webkit-user-select:none;
+}
+.touch-player{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:10px 8px;border:2px solid rgba(255,217,107,.22);border-radius:15px;
+  background:rgba(255,255,255,.06);
+}
+.touch-player-label{font-size:14px;}
+.touch-player.p1 .touch-player-label{color:#D4A84B;}
+.touch-player.p2 .touch-player-label{color:#4ECDC4;}
+.touch-pad{
+  display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);
+  gap:5px;justify-content:center;
+}
+.touch-key,.touch-fire{
+  border:2px solid #6B5A3A;border-radius:12px;background:rgba(255,217,107,.12);
+  color:#FFD96B;font:20px 'Microsoft YaHei',sans-serif;cursor:pointer;
+  touch-action:none;-webkit-tap-highlight-color:transparent;
+}
+.touch-key.up{grid-column:2;grid-row:1;}
+.touch-key.left{grid-column:1;grid-row:2;}
+.touch-key.down{grid-column:2;grid-row:2;}
+.touch-key.right{grid-column:3;grid-row:2;}
+.touch-fire{width:100%;max-width:142px;min-height:42px;font-size:15px;}
+.touch-key.active,.touch-fire.active{
+  background:#FFD96B;color:#3A2E1F;transform:scale(.94);
+}
 .overlay{
   position:absolute;top:0;left:0;width:100%;height:100%;
   display:none;justify-content:center;align-items:center;flex-direction:column;
@@ -53,10 +83,33 @@ canvas{display:block;background:#5C4A30;}
   transition:all .2s;letter-spacing:2px;
 }
 .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,217,107,.5);}
+.level-select{margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.level-select-label{font-size:14px;color:#B8A878;}
+.level-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:360px;}
+.level-btn{
+  width:44px;height:44px;border:2px solid #6B5A3A;border-radius:12px;
+  background:rgba(255,217,107,.15);color:#FFD96B;font-size:18px;cursor:pointer;
+  font-family:'ZCOOL KuaiLe',sans-serif;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+}
+.level-btn:hover{background:#FFD96B;color:#3A2E1F;transform:scale(1.1);}
 .footer{margin-top:18px;font-size:12px;color:#8A7A5A;letter-spacing:2px;}
 .level-anim{font-size:60px;color:#FFD96B;animation:pop .5s ease;}
 @keyframes pop{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
-@media(max-width:600px){canvas{width:95vw;height:auto;}}
+@media(max-width:600px){
+  body{padding:10px 6px;}
+  .title{font-size:25px;}
+  .hud{gap:12px;padding:8px 12px;}
+  canvas{width:95vw;height:auto;}
+}
+@media (pointer:coarse), (max-width:700px){
+  .touch-controls{display:flex;}
+}
+@media(max-width:420px){
+  .touch-controls{gap:8px;}
+  .touch-player{padding:8px 4px;}
+  .touch-pad{grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,40px);gap:4px;}
+}
 </style>
 </head>
 <body>
@@ -78,6 +131,10 @@ canvas{display:block;background:#5C4A30;}
     <p id="ov-text">消灭所有红色坦克，保护基地！</p>
     <div class="sub" id="ov-sub"></div>
     <button class="btn" id="ov-btn" onclick="startGame()">开始游戏</button>
+    <div class="level-select" id="level-select">
+      <div class="level-select-label">或选择关卡：</div>
+      <div class="level-btns" id="level-btns"></div>
+    </div>
   </div>
 </div>
 
@@ -89,6 +146,29 @@ canvas{display:block;background:#5C4A30;}
   <div class="ctrl-group ctrl-p2">
     <span><b>P2 青色坦克</b></span>
     <span>方向键移动 · 回车发射</span>
+  </div>
+</div>
+
+<div class="touch-controls" id="touch-controls" aria-label="手机触控操作">
+  <div class="touch-player p1">
+    <div class="touch-player-label">P1 土黄坦克</div>
+    <div class="touch-pad">
+      <button class="touch-key up" data-key="w" aria-label="P1 向上">▲</button>
+      <button class="touch-key left" data-key="a" aria-label="P1 向左">◀</button>
+      <button class="touch-key down" data-key="s" aria-label="P1 向下">▼</button>
+      <button class="touch-key right" data-key="d" aria-label="P1 向右">▶</button>
+    </div>
+    <button class="touch-fire" data-key="space" aria-label="P1 发射">发射</button>
+  </div>
+  <div class="touch-player p2">
+    <div class="touch-player-label">P2 青色坦克</div>
+    <div class="touch-pad">
+      <button class="touch-key up" data-key="arrowup" aria-label="P2 向上">▲</button>
+      <button class="touch-key left" data-key="arrowleft" aria-label="P2 向左">◀</button>
+      <button class="touch-key down" data-key="arrowdown" aria-label="P2 向下">▼</button>
+      <button class="touch-key right" data-key="arrowright" aria-label="P2 向右">▶</button>
+    </div>
+    <button class="touch-fire" data-key="enter" aria-label="P2 发射">发射</button>
   </div>
 </div>
 
@@ -142,16 +222,16 @@ function playSound(name){
 document.addEventListener('click', initAudio, {once:true});
 document.addEventListener('keydown', initAudio, {once:true});
 
-// ===== 关卡配置（8关，敌人速度适中，逐关递增）=====
+// ===== 关卡配置（8关，敌人像真人，逐关递增）=====
 const LEVELS = [
-  {enemies:5,  eSpd:1.0, eFire:1600, brick:.14, steel:.015},
-  {enemies:7,  eSpd:1.1, eFire:1500, brick:.16, steel:.020},
-  {enemies:9,  eSpd:1.2, eFire:1400, brick:.18, steel:.025},
-  {enemies:11, eSpd:1.3, eFire:1300, brick:.20, steel:.030},
-  {enemies:13, eSpd:1.4, eFire:1200, brick:.22, steel:.035},
-  {enemies:15, eSpd:1.5, eFire:1100, brick:.24, steel:.040},
-  {enemies:17, eSpd:1.6, eFire:1000, brick:.26, steel:.045},
-  {enemies:20, eSpd:1.8, eFire:900,  brick:.28, steel:.050, attackBase:true}
+  {enemies:5,  eSpd:1.3, eFire:600, brick:.14, steel:.015},
+  {enemies:7,  eSpd:1.4, eFire:550, brick:.16, steel:.020},
+  {enemies:9,  eSpd:1.5, eFire:500, brick:.18, steel:.025},
+  {enemies:11, eSpd:1.6, eFire:450, brick:.20, steel:.030},
+  {enemies:13, eSpd:1.7, eFire:400, brick:.22, steel:.035},
+  {enemies:15, eSpd:1.8, eFire:380, brick:.24, steel:.040},
+  {enemies:17, eSpd:1.9, eFire:350, brick:.26, steel:.045},
+  {enemies:20, eSpd:2.0, eFire:300, brick:.28, steel:.050, attackBase:true}
 ];
 
 // ===== 游戏状态 =====
@@ -247,11 +327,24 @@ function spawnPlayer(id){
 
 function spawnEnemy(){
   const spots = [{x:22,y:22},{x:282,y:22},{x:542,y:22}];
-  const sp = spots[Math.floor(Math.random()*3)];
+  const availableSpots = spots.filter(sp=>{
+    const spawnRect = {x:sp.x,y:sp.y,w:TANK,h:TANK};
+    return !G.tanks.some(t=>t.alive && rectsOverlap(spawnRect,{x:t.x,y:t.y,w:TANK,h:TANK}));
+  });
+  if(availableSpots.length===0) return null;
+  const sp = availableSpots[Math.floor(Math.random()*availableSpots.length)];
   const cfg = LEVELS[G.level];
   return {x:sp.x,y:sp.y,dir:2,color:'#FF5A4A',isPlayer:false,
     cooldown:400+Math.random()*800, alive:true, invincible:10,
     speed:cfg.eSpd, fireRate:cfg.eFire, moveTimer:5, attackBase:cfg.attackBase||false};
+}
+
+function trySpawnEnemy(){
+  const enemy = spawnEnemy();
+  if(!enemy) return false;
+  G.tanks.push(enemy);
+  G.enemiesSpawned++;
+  return true;
 }
 
 function fireBullet(tank){
@@ -322,35 +415,33 @@ function moveTank(tank){
       if(Math.abs(snap-tank.y)<8 && !tankWallCollide(nx,snap,tank)) tank.y=snap;
     }
     if(!tank.isPlayer){
-      // 敌人撞墙：优先选朝基地的方向，其次随机
-      const baseDir = dirTowardBase(tank);
-      const dirs = [0,1,2,3].filter(d=>d!==dir);
-      // 把朝基地的方向排前面
-      dirs.sort((a,b)=>{
-        if(a===baseDir) return -1;
-        if(b===baseDir) return 1;
-        return Math.random()-0.5;
-      });
-      let moved = false;
-      for(const d of dirs){
-        const tx = tank.x + DX[d]*spd;
-        const ty = tank.y + DY[d]*spd;
-        if(!tankWallCollide(tx,ty,tank)){
-          tank.dir = d;
-          tank.x = tx; tank.y = ty;
-          moved = true;
-          break;
+      // 敌人撞墙：用findPathTowardBase找路，不再随机
+      const newDir = findPathTowardBase(tank);
+      const tx = tank.x + DX[newDir]*spd;
+      const ty = tank.y + DY[newDir]*spd;
+      if(!tankWallCollide(tx,ty,tank)){
+        tank.dir = newDir;
+        tank.x = tx; tank.y = ty;
+      } else {
+        // 还是不行，试所有方向
+        for(const d of [0,1,2,3]){
+          const tx2 = tank.x + DX[d]*spd;
+          const ty2 = tank.y + DY[d]*spd;
+          if(!tankWallCollide(tx2,ty2,tank)){
+            tank.dir = d;
+            tank.x = tx2; tank.y = ty2;
+            break;
+          }
         }
-      }
-      if(!moved){
-        tank.dir = baseDir;
-        tank.moveTimer = 2;
+        tank.moveTimer = 5;
       }
     }
   }
 }
 
-// ===== 敌人AI（目标：冲向基地+开炮打基地）=====
+// ===== 敌人AI（像真人玩家：边走边打、走位躲避、找角度打基地）=====
+
+// 朝基地的主方向
 function dirTowardBase(tank){
   const dx = (G.base.x+20) - (tank.x+HALF_T);
   const dy = (G.base.y+20) - (tank.y+HALF_T);
@@ -361,55 +452,133 @@ function dirTowardBase(tank){
   }
 }
 
-// 判断敌人是否对准基地（同列或同行且距离近）
-function aimingAtBase(tank){
-  const cx = tank.x + HALF_T;
-  const cy = tank.y + HALF_T;
-  const bx = G.base.x + 20;
-  const by = G.base.y + 20;
-  // 朝下且在基地正上方
-  if(tank.dir===2 && Math.abs(cx-bx)<30 && by>cy) return true;
-  // 朝上且在基地正下方
-  if(tank.dir===0 && Math.abs(cx-bx)<30 && by<cy) return true;
-  // 朝右且在基地正左方
-  if(tank.dir===1 && Math.abs(cy-by)<30 && bx>cx) return true;
-  // 朝左且在基地正右方
-  if(tank.dir===3 && Math.abs(cy-by)<30 && bx<cx) return true;
-  return false;
+// 检查前方有没有墙挡着
+function blockedAhead(tank, dir){
+  const spd = tank.speed;
+  const nx = tank.x + DX[dir]*spd;
+  const ny = tank.y + DY[dir]*spd;
+  return tankWallCollide(nx, ny, tank);
+}
+
+// 找一个能朝基地走的方向（不撞墙的）
+function findPathTowardBase(tank){
+  const want = dirTowardBase(tank);
+  // 先试想要走的方向
+  if(!blockedAhead(tank, want)) return want;
+  // 被挡了，试另外3个方向，优先选朝基地的
+  const alts = [0,1,2,3].filter(d=>d!==want);
+  // 按朝基地程度排序
+  alts.sort((a,b)=>{
+    const aOk = !blockedAhead(tank, a);
+    const bOk = !blockedAhead(tank, b);
+    if(aOk && !bOk) return -1;
+    if(!aOk && bOk) return 1;
+    return Math.random()-0.5;
+  });
+  for(const d of alts){
+    if(!blockedAhead(tank, d)) return d;
+  }
+  return want;
+}
+
+// 离最近的玩家有多远
+function distToNearestPlayer(tank){
+  let min = 9999;
+  for(const t of G.tanks){
+    if(!t.isPlayer || !t.alive) continue;
+    const d = Math.abs(t.x-tank.x) + Math.abs(t.y-tank.y);
+    if(d<min) min=d;
+  }
+  return min;
+}
+
+// 朝最近玩家的方向
+function dirTowardPlayer(tank){
+  let nearest=null, minD=9999;
+  for(const t of G.tanks){
+    if(!t.isPlayer || !t.alive) continue;
+    const d = Math.abs(t.x-tank.x)+Math.abs(t.y-tank.y);
+    if(d<minD){ minD=d; nearest=t; }
+  }
+  if(!nearest) return dirTowardBase(tank);
+  const dx = nearest.x - tank.x;
+  const dy = nearest.y - tank.y;
+  if(Math.abs(dy)>Math.abs(dx)){
+    return dy>0?2:0;
+  } else {
+    return dx>0?1:3;
+  }
 }
 
 function updateEnemy(t){
   if(!t.alive) return;
-  // 计算到基地距离
-  const distToBase = Math.abs(t.x+HALF_T-(G.base.x+20)) + Math.abs(t.y+HALF_T-(G.base.y+20));
+  const cfg = LEVELS[G.level];
 
-  t.moveTimer--;
-  if(t.moveTimer<=0){
-    t.moveTimer = 25 + Math.floor(Math.random()*25);
-    // 90%概率朝基地走
-    if(Math.random() < 0.9){
-      t.dir = dirTowardBase(t);
-    } else {
-      t.dir = Math.floor(Math.random()*4);
+  // 检测前方是否有玩家坦克或基地 → 自动开炮
+  const cx = t.x+HALF_T, cy = t.y+HALF_T;
+  const bx = G.base.x+20, by = G.base.y+20;
+  const playerDist = distToNearestPlayer(t);
+
+  // 判断前方有没有目标（玩家或基地）
+  let shouldShoot = false;
+  // 前方有基地
+  if(t.dir===2 && Math.abs(cx-bx)<40 && by>cy) shouldShoot=true;
+  if(t.dir===0 && Math.abs(cx-bx)<40 && by<cy) shouldShoot=true;
+  if(t.dir===1 && Math.abs(cy-by)<40 && bx>cx) shouldShoot=true;
+  if(t.dir===3 && Math.abs(cy-by)<40 && bx<cx) shouldShoot=true;
+  // 前方有玩家（近距离）
+  if(playerDist < 120){
+    const pDir = dirTowardPlayer(t);
+    if(pDir === t.dir) shouldShoot = true;
+  }
+
+  // 开炮（不管移不移动都开）
+  if(t.cooldown>0) t.cooldown--;
+  if(t.cooldown<=0){
+    if(shouldShoot || Math.random()<0.015){
+      fireBullet(t);
     }
   }
 
-  // 如果对准基地方向，停下来开炮（不再移动）
-  if(aimingAtBase(t) && distToBase < 200){
-    // 不调用moveTank，原地开炮
-    if(t.cooldown>0) t.cooldown--;
-    if(t.cooldown<=0){
-      fireBullet(t); // 100%开炮，不打折
+  // 移动决策（像真人：边走边打，不会站着不动）
+  t.moveTimer--;
+  if(t.moveTimer<=0){
+    t.moveTimer = 30 + Math.floor(Math.random()*40);
+    const r = Math.random();
+    if(playerDist < 100 && r < 0.4){
+      // 玩家近了，40%概率朝玩家走（攻击）
+      t.dir = dirTowardPlayer(t);
+      if(blockedAhead(t, t.dir)) t.dir = findPathTowardBase(t);
+    } else if(r < 0.80){
+      // 朝基地走（主目标）
+      t.dir = findPathTowardBase(t);
+    } else {
+      // 随机走位（像真人拐弯）
+      const randDir = Math.floor(Math.random()*4);
+      t.dir = blockedAhead(t, randDir) ? findPathTowardBase(t) : randDir;
     }
-    return;
+  }
+
+  // 前方被墙堵死时立即换方向（不等timer）
+  if(blockedAhead(t, t.dir)){
+    t.dir = findPathTowardBase(t);
+    t.moveTimer = 10;
+  }
+
+  // 强制保持移动：如果还是走不动，每5帧强制随机换方向
+  t.stuckTimer = (t.stuckTimer||0) + 1;
+  if(t.stuckTimer > 5 && blockedAhead(t, t.dir)){
+    const allDirs = [0,1,2,3].sort(()=>Math.random()-0.5);
+    for(const d of allDirs){
+      if(!blockedAhead(t, d)){
+        t.dir = d;
+        t.stuckTimer = 0;
+        break;
+      }
+    }
   }
 
   moveTank(t);
-  // 移动中射击
-  if(t.cooldown>0) t.cooldown--;
-  if(t.cooldown<=0 && Math.random()<0.03){
-    fireBullet(t);
-  }
 }
 
 // ===== 子弹更新 =====
@@ -559,8 +728,8 @@ function checkLevelClear(){
   if(G.enemiesLeft<=0 && G.enemiesSpawned>=LEVELS[G.level].enemies){
     G.state='levelclear';
     playSound('levelup');
-    if(G.level>=7){
-      showOverlay('通关啦！','恭喜你打败了所有关卡！','卓和创的双人坦克闯关 · 全8关通关','重新开始');
+    if(G.level>=LEVELS.length-1){
+      showOverlay('通关啦！','恭喜你打败了所有关卡！','卓和创的双人坦克闯关 · 全'+LEVELS.length+'关通关','重新开始');
     } else {
       showOverlay('第'+(G.level+1)+'关过关！','消灭了'+LEVELS[G.level].enemies+'个敌人','准备进入第'+(G.level+2)+'关...','下一关');
     }
@@ -580,7 +749,7 @@ function gameOver(){
 
 function nextLevel(){
   G.level++;
-  if(G.level>7){ resetGame(); }
+  if(G.level>=LEVELS.length){ G.level = LEVELS.length-1; }
   startLevel();
 }
 
@@ -596,8 +765,8 @@ function startLevel(){
   G.tanks.push(spawnPlayer(1));
   G.tanks.push(spawnPlayer(2));
   // 初始生成2个敌人
-  G.tanks.push(spawnEnemy()); G.enemiesSpawned++;
-  G.tanks.push(spawnEnemy()); G.enemiesSpawned++;
+  trySpawnEnemy();
+  trySpawnEnemy();
   G.state='playing';
   hideOverlay();
   updateHUD();
@@ -608,6 +777,27 @@ function startGame(){
   startLevel();
 }
 
+// 从指定关卡开始
+function startLevelAt(levelIdx){
+  resetGame();
+  G.level = levelIdx;
+  startLevel();
+}
+
+// 生成选关按钮
+function buildLevelButtons(){
+  const container = document.getElementById('level-btns');
+  container.innerHTML = '';
+  for(let i=0;i<LEVELS.length;i++){
+    const btn = document.createElement('button');
+    btn.className = 'level-btn';
+    btn.textContent = i+1;
+    btn.onclick = ()=>startLevelAt(i);
+    container.appendChild(btn);
+  }
+}
+buildLevelButtons();
+
 // ===== 敌人生成 =====
 function updateSpawning(){
   if(G.state!=='playing') return;
@@ -616,9 +806,7 @@ function updateSpawning(){
   if(G.enemiesSpawned<cfg.enemies && aliveEnemies<4){
     G.spawnTimer--;
     if(G.spawnTimer<=0){
-      G.tanks.push(spawnEnemy());
-      G.enemiesSpawned++;
-      G.spawnTimer = 120;
+      G.spawnTimer = trySpawnEnemy() ? 120 : 30;
     }
   }
 }
@@ -815,10 +1003,10 @@ function hideOverlay(){
 // 按钮处理
 document.getElementById('ov-btn').onclick = ()=>{
   if(G.state==='levelclear'){
-    if(G.level>=7){ resetGame(); startLevel(); }
+    if(G.level>=LEVELS.length-1){ resetGame(); showOverlay('双人坦克闯关','消灭所有红色坦克，保护星形基地！','P1土黄WASD+空格 · P2青色方向键+回车','开始游戏'); }
     else { nextLevel(); }
   } else if(G.state==='gameover'){
-    resetGame(); startLevel();
+    resetGame(); showOverlay('双人坦克闯关','消灭所有红色坦克，保护星形基地！','P1土黄WASD+空格 · P2青色方向键+回车','开始游戏');
   } else {
     startGame();
   }
@@ -844,9 +1032,42 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{
   G.keys[e.key.toLowerCase()]=false;
 });
+
+// 手机触控：把屏幕按键映射到与键盘相同的状态，支持同时按住方向和发射。
+const touchButtons = document.querySelectorAll('.touch-key,.touch-fire');
+function touchKeyValue(button){
+  return button.dataset.key==='space' ? ' ' : button.dataset.key;
+}
+function setTouchKey(button,pressed){
+  const key = touchKeyValue(button);
+  G.keys[key]=pressed;
+  button.classList.toggle('active',pressed);
+  if(!pressed || G.state!=='playing') return;
+  if(key===' '){
+    const tank=G.tanks.find(t=>t.isPlayer&&t.playerId===1&&t.alive);
+    if(tank) fireBullet(tank);
+  } else if(key==='enter'){
+    const tank=G.tanks.find(t=>t.isPlayer&&t.playerId===2&&t.alive);
+    if(tank) fireBullet(tank);
+  }
+}
+touchButtons.forEach(button=>{
+  button.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    button.setPointerCapture(e.pointerId);
+    setTouchKey(button,true);
+  });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(type=>{
+    button.addEventListener(type,e=>{
+      e.preventDefault();
+      setTouchKey(button,false);
+    });
+  });
+});
 // 窗口失焦时清除所有按键状态，防止残留
 window.addEventListener('blur',()=>{
   G.keys = {};
+  touchButtons.forEach(button=>button.classList.remove('active'));
 });
 
 // ===== 主循环 =====
